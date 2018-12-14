@@ -1,0 +1,81 @@
+Run the object detection model based on the nvidia docker image "run_tf_15"
+
+Open pycharm: /usr/local/bin/charm
+Get the object detection running from tensorflow/models repo
+
+1. Install required libarries
+pip install contextlib2
+pip instal lxml
+
+2. Install protobuf
+cd /Documents/tf_models_v15research/
+wget -O protobuf.zip https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
+unzip protobuf.zip 
+./bin/protoc object_detection/protos/*.proto --python_out=.
+
+3. Add extra path to PYTHONPATHs
+export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
+export PYTHONPATH=$PYTHONPATH:`pwd`/object_detection/
+export PYTHONPATH=$PYTHONPATH:/Documents/tf_slim_faster_rcnn/data/coco/PythonAPI/
+
+OR: Add all paths in a single command: 
+export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim:`pwd`/object_detection:/Documents/tf_slim_faster_rcnn/data/coco/PythonAPI/
+
+The final PYTHONPATH would be the following:
+root@d82a4925d881:/Documents/tf_models_v15/research# echo $PYTHONPATH
+/Documents/tf-faster-rcnn-master/data/coco/PythonAPI:/Documents/tf_models_v15/research:/Documents/tf_models_v15/research/slim:/Documents/tf_models_v15/research/object_detection/:/Documents/tf_slim_faster_rcnn/data/coco/PythonAPI/
+
+
+4. Running commands: 
+
+Training: 
+python object_detection/train.py --logtostderr --pipeline_config_path=./object_detection/samples/configs/faster_rcnn_resnet101_pets.config --train_dir=./object_detection/0_train_dir/
+
+python object_detection/train.py --logtostderr --pipeline_config_path=./object_detection/samples/configs/faster_rcnn_resnet101_munich.config --train_dir=./object_detection/0_train_dir/munich_train/
+
+
+Evaluation: 
+python object_detection/eval.py --logtostderr --pipeline_config_path=./object_detection/samples/configs/faster_rcnn_resnet101_pets.config --checkpoint_dir=./object_detection/0_train_dir/ --eval_dir=./object_detection/0_eval_dir/
+
+5. How to train own detector (Munich Vehicle Detection)
+a. modify the config file @ object_detection/samples/model_configs/*.faster_*.config
+Make sure that the num_classes field be changed in model{}
+b. Specify the location of both training and evaluation files
+c. specify a label map: mapping between class id and class name
+
+******************************   Prepareing INPUTS ******************************: 
+a. Generate PASCAL VOC TFRecord files: 
+PASCAL
+python object_detection/dataset_tools/create_pascal_tf_record.py --data_dir=/Documents/Images/VOCdevkit --label_map_path=object_detection/data/pascal_label_map.pbtxt --year=VOC2012 --set=train --output_path=./images_tfrecord/pascal_2012_train.record
+
+b. MUNICH VEHICLE
+python object_detection/dataset_tools/create_munich_vehicle_tf_record.py --data_dir=/Documents/Images/VehicleDetection_dataset/ --set=train --output_path=./images_tfrecord/munich_train.record --label_map_path=./object_detection/data/munich_label_map.pbtxt
+
+****************************** Start training process ******************************: 
+Munich dataset, using Faster R-CNN
+python object_detection/train.py --logtostderr --pipeline_config_path=./object_detection/samples/configs/faster_rcnn_resnet101_munich.config --train_dir=./object_detection/0_train_dir/munich_train
+
+Munich dataset, using SSD: 
+python object_detection/train.py --logtostderr --pipeline_config_path=./object_detection/samples/configs/ssd_mobilenet_v1_munich.config --train_dir=./object_detection/0_train_dir/munich_train_ssd
+
+* Export the graph for inference
+Faster-RCNN:
+python object_detection/export_inference_graph.py --input_type image_tensor --pipeline_config_path object_detection/samples/configs/faster_rcnn_resnet101_munich.config --trained_checkpoint_prefix object_detection/0_train_dir/munich_train_faster_rcnn/model.ckpt-100000 --output_directory object_detection/0_train_dir/munich_train_faster_rcnn/exported_graph/
+
+SSD:
+python object_detection/export_inference_graph.py --input_type image_tensor --pipeline_config_path object_detection/samples/configs/ssd_mobilenet_v1_munich.config --trained_checkpoint_prefix object_detection/0_train_dir/munich_train_ssd/model.ckpt-100000 --output_directory object_detection/0_train_dir/munich_train_ssd/exported_graph/
+
+****************************** Inference and evaluaiton ******************************: 
+1. Run inference on the test dataset and get the result in *.tfrecord format
+Faster-RCNN:
+python -m object_detection/inference/infer_detections --input_tfrecord_paths=/Documents/tf_models_v15/research/images_tfrecord/munich_test.record --output_tfrecord_path=./images_tfrecord/munich_test_faster-rcnn_detections.tfrecord-0000-of-0001 --inference_graph=./object_detection/0_train_dir/munich_train_faster_rcnn/exported_graph/frozen_inference_graph.pb --discard_image_pixels
+
+SSD: 
+python -m object_detection/inference/infer_detections --input_tfrecord_paths=/Documents/tf_models_v15/research/images_tfrecord/munich_test.record --output_tfrecord_path=./images_tfrecord/munich_test_ssd_detections.tfrecord-0000-of-0001 --inference_graph=./object_detection/0_train_dir/munich_train_ssd/exported_graph/frozen_inference_graph.pb --discard_image_pixels
+
+2. Compute the detection result statistics :
+# Faster-RCNN: 
+python object_detection/metrics/offline_eval_map_corloc.py --eval_dir=./images_metrics/ --eval_config_path=./images_metrics/munich_test_detections_eval_config.pbtxt --input_config_path=./images_metrics/munich_test_detections_input_config.pbtxt
+
+SSD:
+python object_detection/metrics/offline_eval_map_corloc.py --eval_config_path=./images_metrics/SSD/munich_test_detections_eval_config.pbtxt --input_config_path=./images_metrics/SSD/munich_test_detections_input_config.pbtxt --eval_dir=./images_metrics/SSD/
