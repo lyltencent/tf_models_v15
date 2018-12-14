@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-r"""Training executable for detection models.
+"""Training executable for detection models.
 
 This executable is used to train DetectionModels. There are two ways of
 configuring the training job:
@@ -40,7 +40,7 @@ Example usage:
         --train_config_path=train_config.pbtxt \
         --input_config_path=train_input_config.pbtxt
 """
-
+import cv2
 import functools
 import json
 import os
