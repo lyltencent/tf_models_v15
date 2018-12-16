@@ -40,29 +40,32 @@ import random
 import glob
 import numpy as np
 import tensorflow as tf
-#import pdb
+# import pdb
 from datasets.dataset_utils import int64_feature, float_feature, bytes_feature
 import cv2
+
 # TFRecords convertion parameters.
 RANDOM_SEED = 4242
 # Yilong: Modify the samples per file
 SAMPLES_PER_FILES = 200
 
-VEHICLE_TYPE = {10.0:'car', 20.0: 'truck'}
+VEHICLE_TYPE = {10.0: 'car', 20.0: 'truck'}
+
 
 def get_gt_from_txt(gt_file, shape):
-	"Get ground truth for a single image"
-	with open(gt_file) as f:
-		lines = f.read().splitlines()
-	gt_info = []
-	for x in lines:
-		x_float = [float(item) for item in x.split(',')]
-		gt_info.append(x_float)
-	gt_matrix = np.array(gt_info)
+    "Get ground truth for a single image"
+    with open(gt_file) as f:
+        lines = f.read().splitlines()
+    gt_info = []
+    for x in lines:
+        x_float = [float(item) for item in x.split(',')]
+        gt_info.append(x_float)
+    gt_matrix = np.array(gt_info)
     # Each line contains bounding box location and vehicle type
-	gt_bboxes = gt_matrix[:, 0:4]
-	gt_classes = gt_matrix[:, 4]
-	return gt_bboxes, gt_classes
+    gt_bboxes = gt_matrix[:, 0:4]
+    gt_classes = gt_matrix[:, 4]
+    return gt_bboxes, gt_classes
+
 
 def _process_image(directory, name):
     """Process a image and annotation file.
@@ -94,10 +97,10 @@ def _process_image(directory, name):
         # order of bboxes = [ymin, xmin, ymax, xmax]
         # ordero of bounding boxes in gt.txt file = [xmin, ymin, xmax, ymax]
         # print label
-        bboxes.append((float(line_float[1]) / shape[0], # ymin
-                       float(line_float[0]) / shape[1], # xmin
-                       float(line_float[3]) / shape[0], # ymax
-                       float(line_float[2]) / shape[1] # xmax
+        bboxes.append((float(line_float[1]) / shape[0],  # ymin
+                       float(line_float[0]) / shape[1],  # xmin
+                       float(line_float[3]) / shape[0],  # ymax
+                       float(line_float[2]) / shape[1]  # xmax
                        ))
         difficult.append(0)
         truncated.append(0)
@@ -133,20 +136,20 @@ def _convert_to_example(image_data, labels, labels_text, bboxes, shape,
 
     image_format = b'JPEG'
     example = tf.train.Example(features=tf.train.Features(feature={
-            'image/height': int64_feature(shape[0]),
-            'image/width': int64_feature(shape[1]),
-            'image/channels': int64_feature(shape[2]),
-            'image/shape': int64_feature(shape),
-            'image/object/bbox/xmin': float_feature(xmin),
-            'image/object/bbox/xmax': float_feature(xmax),
-            'image/object/bbox/ymin': float_feature(ymin),
-            'image/object/bbox/ymax': float_feature(ymax),
-            'image/object/bbox/label': int64_feature(labels),
-            'image/object/bbox/label_text': bytes_feature(labels_text),
-            'image/object/bbox/difficult': int64_feature(difficult),
-            'image/object/bbox/truncated': int64_feature(truncated),
-            'image/format': bytes_feature(image_format),
-            'image/encoded': bytes_feature(image_data)}))
+        'image/height': int64_feature(shape[0]),
+        'image/width': int64_feature(shape[1]),
+        'image/channels': int64_feature(shape[2]),
+        'image/shape': int64_feature(shape),
+        'image/object/bbox/xmin': float_feature(xmin),
+        'image/object/bbox/xmax': float_feature(xmax),
+        'image/object/bbox/ymin': float_feature(ymin),
+        'image/object/bbox/ymax': float_feature(ymax),
+        'image/object/bbox/label': int64_feature(labels),
+        'image/object/bbox/label_text': bytes_feature(labels_text),
+        'image/object/bbox/difficult': int64_feature(difficult),
+        'image/object/bbox/truncated': int64_feature(truncated),
+        'image/format': bytes_feature(image_format),
+        'image/encoded': bytes_feature(image_data)}))
     return example
 
 
@@ -182,7 +185,7 @@ def run(dataset_dir, output_dir, name='munich_train', shuffling=False):
     # Dataset filenames, and shuffling.
     path = os.path.join(dataset_dir)
     # Get the list of images
-    filenames = sorted(glob.glob(os.path.join(path,'*.jpg')))
+    filenames = sorted(glob.glob(os.path.join(path, '*.jpg')))
     # Get the filenames: each element in filenames is "****.jpg"!!
     filenames = [x.split('/')[-1] for x in filenames]
     if shuffling:
@@ -198,7 +201,7 @@ def run(dataset_dir, output_dir, name='munich_train', shuffling=False):
         with tf.python_io.TFRecordWriter(tf_filename) as tfrecord_writer:
             j = 0
             while i < len(filenames) and j < SAMPLES_PER_FILES:
-                sys.stdout.write('\r>> Converting image %d/%d' % (i+1, len(filenames)))
+                sys.stdout.write('\r>> Converting image %d/%d' % (i + 1, len(filenames)))
                 sys.stdout.flush()
 
                 filename = filenames[i]
