@@ -1,0 +1,4 @@
+
+label_map_path: '/Documents/tf_models_v15/research/object_detection/data/munich_label_map.pbtxt' 
+tf_record_input_reader: {input_path: '/Documents/tf_models_v15/research/images_tfrecord/munich_test_faster-rcnn_detections.tfrecord-0000-of-0001'} 
+
