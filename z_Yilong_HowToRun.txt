@@ -1,5 +1,6 @@
-Run the object detection model based on the nvidia docker image "run_tf_15"
+Run the object detection model based on the nvidia docker image "tf_15"
 
+MISC commands: 
 Open pycharm: /usr/local/bin/charm
 Get the object detection running from tensorflow/models repo
 
@@ -8,7 +9,7 @@ pip install contextlib2
 pip instal lxml
 
 2. Install protobuf
-cd /Documents/tf_models_v15research/
+cd /Documents/tf_models_v15/research
 wget -O protobuf.zip https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
 unzip protobuf.zip 
 ./bin/protoc object_detection/protos/*.proto --python_out=.
@@ -16,6 +17,7 @@ unzip protobuf.zip
 3. Add extra path to PYTHONPATHs
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 export PYTHONPATH=$PYTHONPATH:`pwd`/object_detection/
+# PythonAPI
 export PYTHONPATH=$PYTHONPATH:/Documents/tf_slim_faster_rcnn/data/coco/PythonAPI/
 
 OR: Add all paths in a single command: 
