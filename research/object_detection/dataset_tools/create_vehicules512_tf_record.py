@@ -34,9 +34,8 @@ from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
 
 flags = tf.app.flags
-flags.DEFINE_string('data_dir', ' ', 'Root directory to raw Munich Vehicle dataset.')
-flags.DEFINE_string('set', '', 'Convert training set, validation set or '
-                               'merged set.')
+flags.DEFINE_string('data_dir', ' ', 'Root directory to Vehicules 512 dataset.')
+flags.DEFINE_string('set', '', 'Convert training set, validation set, or test set.')
 flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
 flags.DEFINE_string('label_map_path', '',
                     'Path to label map proto')
