@@ -1,6 +1,7 @@
 Run the object detection model based on the nvidia docker image "tf_15"
 
-Last modified: Mar 4, 2019. 
+Last modified: Mar 4, 2019.
+Verified donwload on Personal MAC: Yilong Liang
 
 ######################################
 MISC commands: 

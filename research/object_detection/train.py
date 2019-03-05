@@ -40,6 +40,11 @@ Example usage:
         --train_config_path=train_config.pbtxt \
         --input_config_path=train_input_config.pbtxt
 """
+
+"""
+Last modified: Mar 4, 2019.
+Verified donwload on Personal MAC: Yilong Liang
+"""
 import cv2
 import functools
 import json
