@@ -1,5 +1,8 @@
 Run the object detection model based on the nvidia docker image "tf_15"
 
+Last modified: Mar 4, 2019. 
+
+######################################
 MISC commands: 
 Open pycharm: /usr/local/bin/charm
 Get the object detection running from tensorflow/models repo
