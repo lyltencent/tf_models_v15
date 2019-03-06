@@ -227,6 +227,7 @@ class MultipleGridAnchorGenerator(anchor_generator.AnchorGenerator):
                     base_anchor_size=base_anchor_size,
                     anchor_stride=stride,
                     anchor_offset=offset))
+        # Yilong Liang: Concatenate list of BoxLists.
         concatenated_anchors = box_list_ops.concatenate(anchor_grid_list)
         num_anchors = concatenated_anchors.num_boxes_static()
         if num_anchors is None:
