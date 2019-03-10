@@ -230,6 +230,7 @@ class SSDMetaArch(model.DetectionModel):
             resized_inputs = tf.map_fn(self._image_resizer_fn,
                                        elems=inputs,
                                        dtype=tf.float32)
+            # preprocess: Maps pixel values to the range [-1, 1].
             return self._feature_extractor.preprocess(resized_inputs)
 
     def predict(self, preprocessed_inputs):
@@ -264,6 +265,8 @@ class SSDMetaArch(model.DetectionModel):
                 preprocessed_inputs)
         feature_map_spatial_dims = self._get_feature_map_spatial_dims(feature_maps)
         image_shape = tf.shape(preprocessed_inputs)
+        # Generates a collection of bounding boxes to be used as anchors.\
+        # self._anchors: BoxList holding a collection of N anchor boxes
         self._anchors = self._anchor_generator.generate(
             feature_map_spatial_dims,
             im_height=image_shape[1],
@@ -310,6 +313,8 @@ class SSDMetaArch(model.DetectionModel):
         for idx, (feature_map, num_anchors_per_location
                   ) in enumerate(zip(feature_maps, num_anchors_per_location_list)):
             box_predictor_scope = 'BoxPredictor_{}'.format(idx)
+            # self._box_predictor = core.box_predictor.ConvolutionalBoxPredictor
+            # box_predictions is a dictionary contains ....
             box_predictions = self._box_predictor.predict(feature_map,
                                                           num_anchors_per_location,
                                                           box_predictor_scope)

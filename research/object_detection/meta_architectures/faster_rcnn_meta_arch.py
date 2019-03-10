@@ -527,8 +527,12 @@ class FasterRCNNMetaArch(model.DetectionModel):
               [total_num_padded_proposals, num_classes, mask_height, mask_width]
               containing instance mask predictions.
         """
+        # Preprocessed inputs => Extract proposal feature map (rpn_features_to_crop)
+        # => 1. Based on size of rpn_features_to_crop, get anchors (anchors_boxlist).
+        # => 2. Based on rpn_features_to_crop, apply CONV layer to get rpn_box_predictor_features.
         (rpn_box_predictor_features, rpn_features_to_crop, anchors_boxlist,
          image_shape) = self._extract_rpn_feature_maps(preprocessed_inputs)
+        # "rpn_box_predictor_features" is used to generate RPN proposals (proposal boxes and proposal scores)
         (rpn_box_encodings, rpn_objectness_predictions_with_background
          ) = self._predict_rpn_proposals(rpn_box_predictor_features)
 
@@ -556,6 +560,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
         }
 
         if not self._first_stage_only:
+            # ?? RCNN Step:
             prediction_dict.update(self._predict_second_stage(
                 rpn_box_encodings,
                 rpn_objectness_predictions_with_background,
@@ -617,19 +622,25 @@ class FasterRCNNMetaArch(model.DetectionModel):
               [total_num_padded_proposals, num_classes, mask_height, mask_width]
               containing instance mask predictions.
         """
+        # Get the proposal bounding boxes, in normalized box format.
         proposal_boxes_normalized, _, num_proposals = self._postprocess_rpn(
             rpn_box_encodings, rpn_objectness_predictions_with_background,
             anchors, image_shape)
 
+        # Crop_pool layer:
+        # Crops to a set of proposals from the feature map for a batch of images:
+        # Based on the rpn_features_to_crop and normalized proposal boxes, get the feature map
         flattened_proposal_feature_maps = (
             self._compute_second_stage_input_feature_maps(
                 rpn_features_to_crop, proposal_boxes_normalized))
 
+        #
         box_classifier_features = (
             self._feature_extractor.extract_box_classifier_features(
                 flattened_proposal_feature_maps,
                 scope=self.second_stage_feature_extractor_scope))
-
+        # Apply one FC layer on "box_classifier_features" to get class score
+        # Apply another FC layer on "box_classifier_features" to get bbox_prediction.
         box_predictions = self._mask_rcnn_box_predictor.predict(
             box_classifier_features,
             num_predictions_per_location=1,
@@ -639,6 +650,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
         class_predictions_with_background = tf.squeeze(box_predictions[
                                                            box_predictor.CLASS_PREDICTIONS_WITH_BACKGROUND], axis=1)
 
+        # Get proposal bouding boxes
         absolute_proposal_boxes = ops.normalized_to_image_coordinates(
             proposal_boxes_normalized, image_shape, self._parallel_iterations)
 
@@ -681,13 +693,20 @@ class FasterRCNNMetaArch(model.DetectionModel):
           image_shape: A 1-D tensor representing the input image shape.
         """
         image_shape = tf.shape(preprocessed_inputs)
+        # 1. "rpn_features_to_crop" is feed into RPN to predict proposals
         rpn_features_to_crop = self._feature_extractor.extract_proposal_features(
             preprocessed_inputs, scope=self.first_stage_feature_extractor_scope)
 
         feature_map_shape = tf.shape(rpn_features_to_crop)
+        # 2. Generate anchors
         anchors = self._first_stage_anchor_generator.generate(
             [(feature_map_shape[1], feature_map_shape[2])])
         with slim.arg_scope(self._first_stage_box_predictor_arg_scope):
+            # Default parameters:
+            #   "first_stage_box_predictor_kernel_size = 3"
+            #   "first_stage_box_predictor_depth = 512"
+            # ==> Output of "rpn_box_predictor_features" is feed into TWO separate CONV BLOCKS to
+            # estimate RPN_SCORE and PRN_Bbox_predict
             kernel_size = self._first_stage_box_predictor_kernel_size
             rpn_box_predictor_features = slim.conv2d(
                 rpn_features_to_crop,
@@ -727,6 +746,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
         if len(num_anchors_per_location) != 1:
             raise RuntimeError('anchor_generator is expected to generate anchors '
                                'corresponding to a single feature map.')
+        # "box_predictions": a dictionary containing box (box_encodings) and (objectness score)
         box_predictions = self._first_stage_box_predictor.predict(
             rpn_box_predictor_features,
             num_anchors_per_location[0],
@@ -906,6 +926,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
             rpn_box_encodings_batch)
         tiled_anchor_boxes = tf.tile(
             tf.expand_dims(anchors, 0), [rpn_encodings_shape[0], 1, 1])
+        # Decodes box encodings with respect to the anchor boxes
         proposal_boxes = self._batch_decode_boxes(rpn_box_encodings_batch,
                                                   tiled_anchor_boxes)
         proposal_boxes = tf.squeeze(proposal_boxes, axis=2)
@@ -1253,6 +1274,8 @@ class FasterRCNNMetaArch(model.DetectionModel):
             tf.expand_dims(anchor_boxes, 2), [1, 1, num_classes, 1])
         tiled_anchors_boxlist = box_list.BoxList(
             tf.reshape(tiled_anchor_boxes, [-1, 4]))
+        # Decode boxes that are encoded relative to an anchor collection
+        # Return bboxes in [ymin, xmin, ymax, xmax]
         decoded_boxes = self._box_coder.decode(
             tf.reshape(box_encodings, [-1, self._box_coder.code_size]),
             tiled_anchors_boxlist)
