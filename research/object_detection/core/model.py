@@ -49,7 +49,7 @@ from abc import abstractmethod
 from object_detection.core import standard_fields as fields
 
 
-class DetectionModel(object):
+class dDetectionModel(object):
     """Abstract base class for detection models."""
     __metaclass__ = ABCMeta
 

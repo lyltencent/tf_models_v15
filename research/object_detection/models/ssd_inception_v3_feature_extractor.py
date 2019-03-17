@@ -107,5 +107,6 @@ class SSDInceptionV3FeatureExtractor(ssd_meta_arch.SSDFeatureExtractor):
                         min_depth=self._min_depth,
                         insert_1x1_conv=True,
                         image_features=image_features)
-
+        # feature_maps: an OrderedDict
+        # feature_maps.values(): a list of all feature maps
         return feature_maps.values()

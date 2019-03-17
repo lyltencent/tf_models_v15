@@ -83,7 +83,7 @@ def multi_resolution_feature_maps(feature_map_layout, depth_multiplier,
           'layer_depth': [-1, -1, -1, 512, 256, 128]
         }
         If 'from_layer' is specified, the specified feature map is directly used
-        as a box predictor layer, and the layer_depth is directly infered from the
+        as a box predictor layer, and the layer_depth is directly inferred from the
         feature map (instead of using the provided 'layer_depth' parameter). In
         this case, our convention is to set 'layer_depth' to -1 for clarity.
         Otherwise, if 'from_layer' is an empty string, then the box predictor

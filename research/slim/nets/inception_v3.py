@@ -136,6 +136,8 @@ def inception_v3_base(inputs,
             if end_point == final_endpoint: return net, end_points
             # 35 x 35 x 192.
 
+        # Yilong: use tf.concat() to concatenate different branches into one single output in the inception module
+
         # Inception blocks
         with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.avg_pool2d],
                             stride=1, padding='SAME'):
@@ -285,6 +287,7 @@ def inception_v3_base(inputs,
                 net = tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
             end_points[end_point] = net
             if end_point == final_endpoint: return net, end_points
+
             # mixed_6: 17 x 17 x 768.
             end_point = 'Mixed_6d'
             with tf.variable_scope(end_point):

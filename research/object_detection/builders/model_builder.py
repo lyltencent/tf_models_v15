@@ -139,12 +139,18 @@ def _build_ssd_model(ssd_config, is_training):
                                                      is_training)
 
     box_coder = box_coder_builder.build(ssd_config.box_coder)
+    # matcher contains a method named "match" to return a "Match" Object.
     matcher = matcher_builder.build(ssd_config.matcher)
+    # region_similarity_calculator.compare: return a tensor with shape [N, M] representing the IOA/IOU score, etc.
     region_similarity_calculator = sim_calc.build(
         ssd_config.similarity_calculator)
+    # ssd_box_predictor.predict: returns a prediction dictionary
     ssd_box_predictor = box_predictor_builder.build(hyperparams_builder.build,
                                                     ssd_config.box_predictor,
                                                     is_training, num_classes)
+
+    # anchor_generator: is MultipleGridAnchorGenerator object are always in normalized coordinate
+    # Usage: anchor_generator.generate: Generates a collection of bounding boxes to be used as anchors.
     anchor_generator = anchor_generator_builder.build(
         ssd_config.anchor_generator)
     image_resizer_fn = image_resizer_builder.build(ssd_config.image_resizer)

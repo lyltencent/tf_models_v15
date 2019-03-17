@@ -177,6 +177,7 @@ class SSDMetaArch(model.DetectionModel):
         # TODO: handle agnostic mode and positive/negative class weights
         unmatched_cls_target = None
         unmatched_cls_target = tf.constant([1] + self.num_classes * [0], tf.float32)
+        # target_assigner: assigns classification/regression targets
         self._target_assigner = target_assigner.TargetAssigner(
             self._region_similarity_calculator,
             self._matcher,
@@ -185,8 +186,8 @@ class SSDMetaArch(model.DetectionModel):
             negative_class_weight=1.0,
             unmatched_cls_target=unmatched_cls_target)
 
-        self._classification_loss = classification_loss
-        self._localization_loss = localization_loss
+        self._classification_loss = classification_loss  # an instance of the Loss class in core/losses.py
+        self._localization_loss = localization_loss  # an instance of the Loss class in core/losses.py
         self._classification_loss_weight = classification_loss_weight
         self._localization_loss_weight = localization_loss_weight
         self._normalize_loss_by_num_matches = normalize_loss_by_num_matches
@@ -261,11 +262,14 @@ class SSDMetaArch(model.DetectionModel):
         """
         with tf.variable_scope(None, self._extract_features_scope,
                                [preprocessed_inputs]):
+            # feature_maps: a list of all feature maps
             feature_maps = self._feature_extractor.extract_features(
                 preprocessed_inputs)
+        # feature_map_spatial_dims:  a list of pairs (height, width)
         feature_map_spatial_dims = self._get_feature_map_spatial_dims(feature_maps)
+
         image_shape = tf.shape(preprocessed_inputs)
-        # Generates a collection of bounding boxes to be used as anchors.\
+        # From the list of feature map shapes generates a collection of bounding boxes to be used as anchors.\
         # self._anchors: BoxList holding a collection of N anchor boxes
         self._anchors = self._anchor_generator.generate(
             feature_map_spatial_dims,
@@ -303,11 +307,13 @@ class SSDMetaArch(model.DetectionModel):
           RuntimeError: if box_encodings from the box_predictor does not have
             shape of the form  [batch_size, num_anchors, 1, code_size].
         """
+        # Get number of anchors per location for each feature map
         num_anchors_per_location_list = (
             self._anchor_generator.num_anchors_per_location())
         if len(feature_maps) != len(num_anchors_per_location_list):
             raise RuntimeError('the number of feature maps must match the '
                                'length of self.anchors.NumAnchorsPerLocation().')
+        # Start prediction from each feature map
         box_encodings_list = []
         cls_predictions_with_background_list = []
         for idx, (feature_map, num_anchors_per_location
@@ -400,19 +406,24 @@ class SSDMetaArch(model.DetectionModel):
         with tf.name_scope('Postprocessor'):
             box_encodings = prediction_dict['box_encodings']
             class_predictions = prediction_dict['class_predictions_with_background']
+
+            # detection_boxes: decoded detection boxes
             detection_boxes, detection_keypoints = self._batch_decode(box_encodings)
             detection_boxes = tf.expand_dims(detection_boxes, axis=2)
 
             class_predictions_without_background = tf.slice(class_predictions,
                                                             [0, 0, 1],
                                                             [-1, -1, -1])
+            # scores of the detection boxes
             detection_scores = self._score_conversion_fn(
                 class_predictions_without_background)
+
             clip_window = tf.constant([0, 0, 1, 1], tf.float32)
             additional_fields = None
             if detection_keypoints is not None:
                 additional_fields = {
                     fields.BoxListFields.keypoints: detection_keypoints}
+            # Apply non maximum suppression on the detected bboxes
             (nmsed_boxes, nmsed_scores, nmsed_classes, _, nmsed_additional_fields,
              num_detections) = self._non_max_suppression_fn(
                 detection_boxes,
@@ -454,6 +465,8 @@ class SSDMetaArch(model.DetectionModel):
             keypoints = None
             if self.groundtruth_has_field(fields.BoxListFields.keypoints):
                 keypoints = self.groundtruth_lists(fields.BoxListFields.keypoints)
+
+            # * Before computing the losses, get the classification targets and regression targets.
             (batch_cls_targets, batch_cls_weights, batch_reg_targets,
              batch_reg_weights, match_list) = self._assign_targets(
                 self.groundtruth_lists(fields.BoxListFields.boxes),

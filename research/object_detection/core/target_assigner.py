@@ -150,12 +150,17 @@ class TargetAssigner(object):
 
         with tf.control_dependencies(
                 [unmatched_shape_assert, labels_and_box_shapes_assert]):
+            # 1) Compute pairwise similarity between anchors and groundtruth boxes using a
+            #   provided RegionSimilarity Calculator
             match_quality_matrix = self._similarity_calc.compare(groundtruth_boxes,
                                                                  anchors)
+            # 2) Compute a matching based on the similarity matrix using a provided Matcher
             match = self._matcher.match(match_quality_matrix, **params)
+            # 3) Assign regression targets based on the matching and a provided BoxCoder
             reg_targets = self._create_regression_targets(anchors,
                                                           groundtruth_boxes,
                                                           match)
+            # 4) Assign classification targets based on the matching and groundtruth labels
             cls_targets = self._create_classification_targets(groundtruth_labels,
                                                               match)
             reg_weights = self._create_regression_weights(match)
