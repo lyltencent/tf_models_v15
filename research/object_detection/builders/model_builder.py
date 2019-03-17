@@ -235,6 +235,7 @@ def _build_faster_rcnn_model(frcnn_config, is_training):
         frcnn_config.feature_extractor, is_training)
 
     first_stage_only = frcnn_config.first_stage_only
+    # first_stage_anchor_generator.generate(): return BoxList instance in core/box_list.py
     first_stage_anchor_generator = anchor_generator_builder.build(
         frcnn_config.first_stage_anchor_generator)
 

@@ -128,6 +128,7 @@ def get_inputs(input_queue, num_classes, merge_multiple_label_boxes=False):
         else:
             classes_gt = util_ops.padded_one_hot_encoding(
                 indices=classes_gt, depth=num_classes, left_pad=0)
+        # Use get method here, since sometimes these fields are not available.
         masks_gt = read_data.get(fields.InputDataFields.groundtruth_instance_masks)
         keypoints_gt = read_data.get(fields.InputDataFields.groundtruth_keypoints)
         if (merge_multiple_label_boxes and (

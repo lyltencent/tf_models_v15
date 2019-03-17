@@ -354,6 +354,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
             first_stage_box_predictor_kernel_size)
         self._first_stage_box_predictor_depth = first_stage_box_predictor_depth
         self._first_stage_minibatch_size = first_stage_minibatch_size
+        # Subsamples minibatches to a desired balance of positives and negatives.
         self._first_stage_sampler = sampler.BalancedPositiveNegativeSampler(
             positive_fraction=first_stage_positive_balance_fraction)
         self._first_stage_box_predictor = box_predictor.ConvolutionalBoxPredictor(
@@ -530,9 +531,12 @@ class FasterRCNNMetaArch(model.DetectionModel):
         # Preprocessed inputs => Extract proposal feature map (rpn_features_to_crop)
         # => 1. Based on size of rpn_features_to_crop, get anchors (anchors_boxlist).
         # => 2. Based on rpn_features_to_crop, apply CONV layer to get rpn_box_predictor_features.
+        # e.g. pre-proccessed image => [pre-trained model] => rpn_features_to_crop => [CONV 512*3*3] => rpn_box_predictor_features
         (rpn_box_predictor_features, rpn_features_to_crop, anchors_boxlist,
          image_shape) = self._extract_rpn_feature_maps(preprocessed_inputs)
         # "rpn_box_predictor_features" is used to generate RPN proposals (proposal boxes and proposal scores)
+        # e.g. rpn_box_predictor_features => [CONV #anchors * #class_slot] => class_prediction
+        #      rpn_box_predictor_features => [CONV #anchors * 4] => box_encoding
         (rpn_box_encodings, rpn_objectness_predictions_with_background
          ) = self._predict_rpn_proposals(rpn_box_predictor_features)
 
@@ -627,7 +631,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
             rpn_box_encodings, rpn_objectness_predictions_with_background,
             anchors, image_shape)
 
-        # Crop_pool layer:
+        # flattened_proposal_feature_maps: Output of the crop_pool_layer:
         # Crops to a set of proposals from the feature map for a batch of images:
         # Based on the rpn_features_to_crop and normalized proposal boxes, get the feature map
         flattened_proposal_feature_maps = (
