@@ -37,12 +37,20 @@ from object_detection.models.ssd_inception_v3_feature_extractor import SSDIncept
 from object_detection.models.ssd_mobilenet_v1_feature_extractor import SSDMobileNetV1FeatureExtractor
 from object_detection.protos import model_pb2
 
+from object_detection.meta_architectures import stdn_meta_arch
+from object_detection.models.stdn_inception_v3_feature_extractor import STDNInceptionV3FeatureExtractor
+
+
 # A map of names to SSD feature extractors.
 SSD_FEATURE_EXTRACTOR_CLASS_MAP = {
     'ssd_inception_v2': SSDInceptionV2FeatureExtractor,
     'ssd_inception_v3': SSDInceptionV3FeatureExtractor,
     'ssd_mobilenet_v1': SSDMobileNetV1FeatureExtractor,
     'embedded_ssd_mobilenet_v1': EmbeddedSSDMobileNetV1FeatureExtractor,
+}
+
+STDN_FEATURE_EXTRACTOR_CLASS_MAP = {
+    'stdn_inception_v3': STDNInceptionV3FeatureExtractor
 }
 
 # A map of names to Faster R-CNN feature extractors.
@@ -83,6 +91,8 @@ def build(model_config, is_training):
         return _build_ssd_model(model_config.ssd, is_training)
     if meta_architecture == 'faster_rcnn':
         return _build_faster_rcnn_model(model_config.faster_rcnn, is_training)
+    if meta_architecture == 'stdn':
+        return _build_stdn_model(model_config.stdn, is_training)
     raise ValueError('Unknown meta architecture: {}'.format(meta_architecture))
 
 
@@ -332,3 +342,96 @@ def _build_faster_rcnn_model(frcnn_config, is_training):
             second_stage_mask_prediction_loss_weight=(
                 second_stage_mask_prediction_loss_weight),
             **common_kwargs)
+
+
+def _build_stdn_feature_extractor(feature_extractor_config, is_training,
+                                 reuse_weights=None):
+    """Builds a stdn_meta_arch.STDNFeatureExtractor based on config.
+
+    Args:
+      feature_extractor_config: A SSDFeatureExtractor proto config from ssd.proto.
+      is_training: True if this feature extractor is being built for training.
+      reuse_weights: if the feature extractor should reuse weights.
+
+    Returns:
+      ssd_meta_arch.SSDFeatureExtractor based on config.
+
+    Raises:
+      ValueError: On invalid feature extractor type.
+    """
+    feature_type = feature_extractor_config.type
+    depth_multiplier = feature_extractor_config.depth_multiplier
+    min_depth = feature_extractor_config.min_depth
+    pad_to_multiple = feature_extractor_config.pad_to_multiple
+    batch_norm_trainable = feature_extractor_config.batch_norm_trainable
+    conv_hyperparams = hyperparams_builder.build(
+        feature_extractor_config.conv_hyperparams, is_training)
+
+    if feature_type not in STDN_FEATURE_EXTRACTOR_CLASS_MAP:
+        raise ValueError('Unknown stdn feature_extractor: {}'.format(feature_type))
+
+    feature_extractor_class = STDN_FEATURE_EXTRACTOR_CLASS_MAP[feature_type]
+    return feature_extractor_class(is_training, depth_multiplier, min_depth,
+                                   pad_to_multiple, conv_hyperparams,
+                                   batch_norm_trainable, reuse_weights)
+
+
+def _build_stdn_model(stdn_config, is_training):
+
+    """Builds an STDN detection model based on the model config.
+
+    Args:
+      stdn_config: A stdn.proto object containing the config for the desired
+        STDNMetaArch.
+      is_training: True if this model is being built for training purposes.
+
+    Returns:
+      STDNMetaArch based on the config.
+
+    """
+    num_classes = stdn_config.num_classes
+
+    # Feature extractor
+    feature_extractor = _build_stdn_feature_extractor(stdn_config.feature_extractor,
+                                                     is_training)
+
+    box_coder = box_coder_builder.build(stdn_config.box_coder)
+    # matcher contains a method named "match" to return a "Match" Object.
+    matcher = matcher_builder.build(stdn_config.matcher)
+    # region_similarity_calculator.compare: return a tensor with shape [N, M] representing the IOA/IOU score, etc.
+    region_similarity_calculator = sim_calc.build(
+        stdn_config.similarity_calculator)
+    # ssd_box_predictor.predict: returns a prediction dictionary
+    ssd_box_predictor = box_predictor_builder.build(hyperparams_builder.build,
+                                                    stdn_config.box_predictor,
+                                                    is_training, num_classes)
+
+    # anchor_generator: is MultipleGridAnchorGenerator object are always in normalized coordinate
+    # Usage: anchor_generator.generate: Generates a collection of bounding boxes to be used as anchors.
+    anchor_generator = anchor_generator_builder.build(
+        stdn_config.anchor_generator)
+    image_resizer_fn = image_resizer_builder.build(stdn_config.image_resizer)
+    non_max_suppression_fn, score_conversion_fn = post_processing_builder.build(
+        stdn_config.post_processing)
+    (classification_loss, localization_loss, classification_weight,
+     localization_weight,
+     hard_example_miner) = losses_builder.build(stdn_config.loss)
+    normalize_loss_by_num_matches = stdn_config.normalize_loss_by_num_matches
+
+    return stdn_meta_arch.STDNMetaArch(
+        is_training,
+        anchor_generator,
+        ssd_box_predictor,
+        box_coder,
+        feature_extractor,
+        matcher,
+        region_similarity_calculator,
+        image_resizer_fn,
+        non_max_suppression_fn,
+        score_conversion_fn,
+        classification_loss,
+        localization_loss,
+        classification_weight,
+        localization_weight,
+        normalize_loss_by_num_matches,
+        hard_example_miner)
