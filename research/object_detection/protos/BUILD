@@ -298,11 +298,28 @@ proto_library(
 )
 
 proto_library(
+    name = "stdn_proto",
+    srcs = ["stdn.proto"],
+    deps = [
+        ":anchor_generator_proto",
+        ":box_coder_proto",
+        ":box_predictor_proto",
+        ":hyperparams_proto",
+        ":image_resizer_proto",
+        ":losses_proto",
+        ":matcher_proto",
+        ":post_processing_proto",
+        ":region_similarity_calculator_proto",
+    ],
+)
+
+proto_library(
     name = "model_proto",
     srcs = ["model.proto"],
     deps = [
         ":faster_rcnn_proto",
         ":ssd_proto",
+        ":stdn_proto",
     ],
 )
 
