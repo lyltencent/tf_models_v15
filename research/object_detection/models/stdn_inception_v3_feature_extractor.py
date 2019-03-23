@@ -13,10 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
-"""SSDFeatureExtractor for InceptionV3 features."""
+"""STDN FeatureExtractor for InceptionV3 features."""
 import tensorflow as tf
 
-from object_detection.meta_architectures import ssd_meta_arch
 from object_detection.meta_architectures import stdn_meta_arch
 from object_detection.models import feature_map_generators
 from object_detection.utils import ops
@@ -57,7 +56,7 @@ def scale_transfer_module(features):
 
 
 class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
-    """SSD Feature Extractor using InceptionV3 features."""
+    """STDN Feature Extractor using InceptionV3 features."""
 
     def __init__(self,
                  is_training,
@@ -67,7 +66,7 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                  conv_hyperparams,
                  batch_norm_trainable=True,
                  reuse_weights=None):
-        """InceptionV3 Feature Extractor for SSD Models.
+        """InceptionV3 Feature Extractor for STDN Models.
     
         Args:
           is_training: whether the network is in training mode.
@@ -87,7 +86,7 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
             conv_hyperparams, batch_norm_trainable, reuse_weights)
 
     def preprocess(self, resized_inputs):
-        """SSD preprocessing.
+        """STDN preprocessing.
     
         Maps pixel values to the range [-1, 1].
     
@@ -118,10 +117,10 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                            tf.greater_equal(tf.shape(preprocessed_inputs)[2], 33)),
             ['image size must at least be 33 in both height and width.'])
 
-        feature_map_layout = {
-            'from_layer': ['Mixed_7a_pool', 'Mixed_7b_pool', 'Mixed_7c_pool', '', '', ''],
-            'layer_depth': [-1, -1, -1, 512, 256, 128],
-        }
+        # feature_map_layout = {
+        #     'from_layer': ['Mixed_7a_pool', 'Mixed_7b_pool', 'Mixed_7c_pool', '', '', ''],
+        #     'layer_depth': [-1, -1, -1, 512, 256, 128],
+        # }
 
         with tf.control_dependencies([shape_assert]):
             with slim.arg_scope(self._conv_hyperparams):

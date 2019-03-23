@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""SSD Meta-architecture definition.
+"""STDN Meta-architecture definition.
 
-General tensorflow implementation of convolutional Multibox/SSD detection
-models.
+General tensorflow implementation of STDN detection models.
+
 """
 from abc import abstractmethod
 
@@ -34,7 +34,7 @@ slim = tf.contrib.slim
 
 
 class STDNFeatureExtractor(object):
-    """SSD Feature Extractor definition."""
+    """STDN Feature Extractor definition."""
 
     def __init__(self,
                  is_training,
@@ -100,7 +100,7 @@ class STDNFeatureExtractor(object):
 
 
 class STDNMetaArch(model.DetectionModel):
-    """SSD Meta-architecture definition."""
+    """STDN Meta-architecture definition."""
 
     def __init__(self,
                  is_training,
@@ -120,7 +120,7 @@ class STDNMetaArch(model.DetectionModel):
                  normalize_loss_by_num_matches,
                  hard_example_miner,
                  add_summaries=True):
-        """SSDMetaArch Constructor.
+        """STDN MetaArch Constructor.
 
         TODO: group NMS parameters + score converter into a class and loss
         parameters into a class and write config protos for postprocessing
@@ -132,7 +132,7 @@ class STDNMetaArch(model.DetectionModel):
           anchor_generator: an anchor_generator.AnchorGenerator object.
           box_predictor: a box_predictor.BoxPredictor object.
           box_coder: a box_coder.BoxCoder object.
-          feature_extractor: a SSDFeatureExtractor object.
+          feature_extractor: a STDNFeatureExtractor object.
           matcher: a matcher.Matcher object.
           region_similarity_calculator: a
             region_similarity_calculator.RegionSimilarityCalculator object.
