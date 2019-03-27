@@ -40,7 +40,7 @@ def scale_transfer_module(features):
     feature3_pool = slim.avg_pool2d(feature3, [2, 2], stride=2, scope='AvgPool_7c_2x2')
 
     # scale transfer of the features
-    feature1_tr = tf.depth_to_space(feature1, 2)
+    # feature1_tr = tf.depth_to_space(feature1, 2)
     feature2_tr = tf.depth_to_space(feature2, 2)
     feature3_tr = tf.depth_to_space(feature3, 4)
 
@@ -48,12 +48,12 @@ def scale_transfer_module(features):
     output_features['Mixed_7b_pool'] = feature2_pool
     output_features['Mixed_7c_pool'] = feature3_pool
 
-    output_features['Mixed_7a_upscale'] = feature1_tr
+    # output_features['Mixed_7a_upscale'] = feature1_tr
     output_features['Mixed_7b_upscale'] = feature2_tr
     output_features['Mixed_7c_upscale'] = feature3_tr
 
     # Also add the original spatial resolution.
-    output_features['Mixed_7c'] = feature3
+    output_features['Mixed_7a'] = feature1
 
     return output_features
 
