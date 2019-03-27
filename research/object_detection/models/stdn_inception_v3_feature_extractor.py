@@ -29,9 +29,9 @@ def scale_transfer_module(features):
 
     # 8 x 8 x 1280
     feature1 = features['Mixed_7a']
-    # 8x8x2048
+    # 8 x 8 x 2048
     feature2 = features['Mixed_7b']
-    # 8x8x2048
+    # 8 x 8 x 2048
     feature3 = features['Mixed_7c']
 
     # pooling of the existing features
@@ -51,6 +51,9 @@ def scale_transfer_module(features):
     output_features['Mixed_7a_upscale'] = feature1_tr
     output_features['Mixed_7b_upscale'] = feature2_tr
     output_features['Mixed_7c_upscale'] = feature3_tr
+
+    # Also add the original spatial resolution.
+    output_features['Mixed_7c'] = feature3
 
     return output_features
 
