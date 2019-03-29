@@ -28,7 +28,6 @@ from object_detection.utils import label_map_util
 from object_detection.utils import ops
 from object_detection.utils import visualization_utils as vis_utils
 from tensorboard import summary as summary_lib
-
 slim = tf.contrib.slim
 
 
@@ -317,7 +316,8 @@ def _run_checkpoint_once(tensor_dict,
             raise ValueError('`checkpoint_dirs` must have at least one entry.')
         checkpoint_file = tf.train.latest_checkpoint(checkpoint_dirs[0])
         saver = tf.train.Saver(variables_to_restore)
-        saver.restore(sess, checkpoint_file)
+        import pdb; pdb.set_trace()
+	saver.restore(sess, checkpoint_file)
 
     if save_graph:
         tf.train.write_graph(sess.graph_def, save_graph_dir, 'eval.pbtxt')
@@ -469,7 +469,7 @@ def repeated_checkpoint_run(tensor_dict,
             # Yilong Liang
             global_step, metrics, pr_value = _run_checkpoint_once(tensor_dict, evaluators,
                                                     batch_processor,
-                                                    last_evaluated_model_path,
+                                                    checkpoint_dirs,
                                                     variables_to_restore,
                                                     None, num_batches,
                                                     master, save_graph,
