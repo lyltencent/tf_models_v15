@@ -27,17 +27,37 @@ from object_detection.core import standard_fields as fields
 from object_detection.utils import label_map_util
 from object_detection.utils import ops
 from object_detection.utils import visualization_utils as vis_utils
+from tensorboard import summary as summary_lib
 
 slim = tf.contrib.slim
 
 
-def write_metrics(metrics, global_step, summary_dir):
-    """Write metrics to a summary directory.
+# def write_metrics(metrics, global_step, summary_dir):
+#     """Write metrics to a summary directory.
+#
+#     Args:
+#       metrics: A dictionary containing metric names and values.
+#       global_step: Global step at which the metrics are computed.
+#       summary_dir: Directory to write tensorflow summaries to.
+#     """
+#     logging.info('Writing metrics to tf summary.')
+#     summary_writer = tf.summary.FileWriter(summary_dir)
+#     for key in sorted(metrics):
+#         summary = tf.Summary(value=[
+#             tf.Summary.Value(tag=key, simple_value=metrics[key]),
+#         ])
+#         summary_writer.add_summary(summary, global_step)
+#         logging.info('%s: %f', key, metrics[key])
+#     summary_writer.close()
+#     logging.info('Metrics written to tf summary.')
 
+def write_metrics(metrics, global_step, summary_dir, pr_value=None):
+    """Write metrics to a summary directory.
     Args:
-      metrics: A dictionary containing metric names and values.
-      global_step: Global step at which the metrics are computed.
-      summary_dir: Directory to write tensorflow summaries to.
+        metrics: A dictionary containing metric names and values.
+        global_step: Global step at which the metrics are computed.
+        summary_dir: Directory to write tensorflow summaries to.
+        pr_value: A dictionary containing pr_value names and values.
     """
     logging.info('Writing metrics to tf summary.')
     summary_writer = tf.summary.FileWriter(summary_dir)
@@ -47,9 +67,67 @@ def write_metrics(metrics, global_step, summary_dir):
         ])
         summary_writer.add_summary(summary, global_step)
         logging.info('%s: %f', key, metrics[key])
+    if pr_value is not None:
+        for key in sorted(pr_value):
+            num_thresholds = min(500, len(pr_value[key]['precisions']))
+            if num_thresholds != len(pr_value[key]['precisions']):
+                gap = len(pr_value[key]['precisions']) / num_thresholds
+                pr_value[key]['precisions'] = np.append(pr_value[key]['precisions'][::gap], pr_value[key]['precisions'][-1])
+                pr_value[key]['recalls'] = np.append(pr_value[key]['recalls'][::gap], pr_value[key]['recalls'][-1])
+                num_thresholds = len(pr_value[key]['precisions'])
+            # the pr_curve_raw_data_pb() needs the a ascending precisions array and a descending recalls array
+            pr_value[key]['precisions'].sort()
+            pr_value[key]['recalls'][::-1].sort()
+            # write PR curve:
+            summary = summary_lib.pr_curve_raw_data_pb(
+                name=key,
+                true_positive_counts=-np.ones(num_thresholds),
+                false_positive_counts=-np.ones(num_thresholds),
+                true_negative_counts=-np.ones(num_thresholds),
+                false_negative_counts=-np.ones(num_thresholds),
+                precision=pr_value[key]['precisions'],
+                recall=pr_value[key]['recalls'],
+                num_thresholds=num_thresholds
+            )
+            summary_writer.add_summary(summary, global_step)
+            logging.info('%s: %f', key, pr_value[key])
     summary_writer.close()
     logging.info('Metrics written to tf summary.')
 
+  # for key in sorted(metrics):
+  #   summary = tf.Summary(value=[
+  #       tf.Summary.Value(tag=key, simple_value=metrics[key]),
+  #   ])
+  #   summary_writer.add_summary(summary, global_step)
+  #   logging.info('%s: %f', key, metrics[key])
+  # if pr_value is not None:
+  #   for key in sorted(pr_value):
+  #     # this part is used to control the num of the points in the PR curve,
+  #     # since it always generates much more than 10,000 points in the pr curve, which is not necessary to plot all these point into the PR curve.
+  #     num_thresholds = min(500, len(pr_value[key]['precisions']))
+  #     if num_thresholds != len(pr_value[key]['precisions']):
+  #       gap = len(pr_value[key]['precisions']) / num_thresholds
+  #       pr_value[key]['precisions'] = np.append(pr_value[key]['precisions'][::gap], pr_value[key]['precisions'][-1])
+  #       pr_value[key]['recalls'] = np.append(pr_value[key]['recalls'][::gap], pr_value[key]['recalls'][-1])
+  #       num_thresholds = len(pr_value[key]['precisions'])
+  #     # the pr_curve_raw_data_pb() needs the a ascending precisions array and a descending recalls array
+  #     pr_value[key]['precisions'].sort()
+  #     pr_value[key]['recalls'][::-1].sort()
+  #     #write pr curve
+  #     summary = summary_lib.pr_curve_raw_data_pb(
+  #       name=key,
+  #       true_positive_counts=-np.ones(num_thresholds),
+  #       false_positive_counts=-np.ones(num_thresholds),
+  #       true_negative_counts=-np.ones(num_thresholds),
+  #       false_negative_counts=-np.ones(num_thresholds),
+  #       precision=pr_value[key]['precisions'],
+  #       recall=pr_value[key]['recalls'],
+  #       num_thresholds=num_thresholds
+  #       )
+  #     summary_writer.add_summary(summary, global_step)
+  #     logging.info('%s: %f', key, pr_value[key])
+  # summary_writer.close()
+  # logging.info('Metrics written to tf summary.')
 
 # TODO: Add tests.
 def visualize_detection_results(result_dict,
@@ -278,14 +356,18 @@ def _run_checkpoint_once(tensor_dict,
             logging.info('# skipped: %d', counters['skipped'])
             all_evaluator_metrics = {}
             for evaluator in evaluators:
-                metrics = evaluator.evaluate()
+                # metrics = evaluator.evaluate()
+                # Yilong Liang:
+                metrics, pr_value = evaluator.evaluate()
                 evaluator.clear()
                 if any(key in all_evaluator_metrics for key in metrics):
                     raise ValueError('Metric names between evaluators must not collide.')
                 all_evaluator_metrics.update(metrics)
             global_step = tf.train.global_step(sess, tf.train.get_global_step())
     sess.close()
-    return (global_step, all_evaluator_metrics)
+    # return (global_step, all_evaluator_metrics)
+    # Yilong Liang
+    return (global_step, all_evaluator_metrics, pr_value)
 
 
 # TODO: Add tests.
@@ -372,14 +454,25 @@ def repeated_checkpoint_run(tensor_dict,
                          'seconds', eval_interval_secs)
         else:
             last_evaluated_model_path = model_path
-            global_step, metrics = _run_checkpoint_once(tensor_dict, evaluators,
-                                                        batch_processor,
-                                                        checkpoint_dirs,
-                                                        variables_to_restore,
-                                                        restore_fn, num_batches,
-                                                        master, save_graph,
-                                                        save_graph_dir)
-            write_metrics(metrics, global_step, summary_dir)
+            # Yilong Liang
+            # global_step, metrics = _run_checkpoint_once(tensor_dict, evaluators,
+            #                                             batch_processor,
+            #                                             checkpoint_dirs,
+            #                                             variables_to_restore,
+            #                                             restore_fn, num_batches,
+            #                                             master, save_graph,
+            #                                             save_graph_dir)
+            # Yilong Liang
+            global_step, metrics, pr_value = _run_checkpoint_once(tensor_dict, evaluators,
+                                                    batch_processor,
+                                                    last_evaluated_model_path,
+                                                    variables_to_restore,
+                                                    None, num_batches,
+                                                    master, save_graph,
+                                                    save_graph_dir)
+
+            # write_metrics(metrics, global_step, summary_dir)
+            write_metrics(metrics=metrics, pr_value=pr_value, global_step=global_step, summary_dir=summary_dir)
         number_of_evaluations += 1
 
         if (max_number_of_evaluations and
