@@ -438,6 +438,10 @@ def repeated_checkpoint_run(tensor_dict,
 
     if not checkpoint_dirs:
         raise ValueError('`checkpoint_dirs` must have at least one entry.')
+    #Yilong Liang
+    metrics = {}
+    pr_value = {}
+    global_step = {}
 
     last_evaluated_model_path = None
     number_of_evaluations = 0
