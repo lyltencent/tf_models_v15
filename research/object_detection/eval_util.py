@@ -29,8 +29,6 @@ from object_detection.utils import ops
 from object_detection.utils import visualization_utils as vis_utils
 from tensorboard import summary as summary_lib
 slim = tf.contrib.slim
-
-
 # def write_metrics(metrics, global_step, summary_dir):
 #     """Write metrics to a summary directory.
 #
@@ -49,6 +47,7 @@ slim = tf.contrib.slim
 #         logging.info('%s: %f', key, metrics[key])
 #     summary_writer.close()
 #     logging.info('Metrics written to tf summary.')
+
 
 def write_metrics(metrics, global_step, summary_dir, pr_value=None):
     """Write metrics to a summary directory.
@@ -93,40 +92,6 @@ def write_metrics(metrics, global_step, summary_dir, pr_value=None):
     summary_writer.close()
     logging.info('Metrics written to tf summary.')
 
-  # for key in sorted(metrics):
-  #   summary = tf.Summary(value=[
-  #       tf.Summary.Value(tag=key, simple_value=metrics[key]),
-  #   ])
-  #   summary_writer.add_summary(summary, global_step)
-  #   logging.info('%s: %f', key, metrics[key])
-  # if pr_value is not None:
-  #   for key in sorted(pr_value):
-  #     # this part is used to control the num of the points in the PR curve,
-  #     # since it always generates much more than 10,000 points in the pr curve, which is not necessary to plot all these point into the PR curve.
-  #     num_thresholds = min(500, len(pr_value[key]['precisions']))
-  #     if num_thresholds != len(pr_value[key]['precisions']):
-  #       gap = len(pr_value[key]['precisions']) / num_thresholds
-  #       pr_value[key]['precisions'] = np.append(pr_value[key]['precisions'][::gap], pr_value[key]['precisions'][-1])
-  #       pr_value[key]['recalls'] = np.append(pr_value[key]['recalls'][::gap], pr_value[key]['recalls'][-1])
-  #       num_thresholds = len(pr_value[key]['precisions'])
-  #     # the pr_curve_raw_data_pb() needs the a ascending precisions array and a descending recalls array
-  #     pr_value[key]['precisions'].sort()
-  #     pr_value[key]['recalls'][::-1].sort()
-  #     #write pr curve
-  #     summary = summary_lib.pr_curve_raw_data_pb(
-  #       name=key,
-  #       true_positive_counts=-np.ones(num_thresholds),
-  #       false_positive_counts=-np.ones(num_thresholds),
-  #       true_negative_counts=-np.ones(num_thresholds),
-  #       false_negative_counts=-np.ones(num_thresholds),
-  #       precision=pr_value[key]['precisions'],
-  #       recall=pr_value[key]['recalls'],
-  #       num_thresholds=num_thresholds
-  #       )
-  #     summary_writer.add_summary(summary, global_step)
-  #     logging.info('%s: %f', key, pr_value[key])
-  # summary_writer.close()
-  # logging.info('Metrics written to tf summary.')
 
 # TODO: Add tests.
 def visualize_detection_results(result_dict,
