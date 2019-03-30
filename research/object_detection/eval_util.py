@@ -316,8 +316,7 @@ def _run_checkpoint_once(tensor_dict,
             raise ValueError('`checkpoint_dirs` must have at least one entry.')
         checkpoint_file = tf.train.latest_checkpoint(checkpoint_dirs[0])
         saver = tf.train.Saver(variables_to_restore)
-        import pdb; pdb.set_trace()
-	saver.restore(sess, checkpoint_file)
+        saver.restore(sess, checkpoint_file)
 
     if save_graph:
         tf.train.write_graph(sess.graph_def, save_graph_dir, 'eval.pbtxt')
