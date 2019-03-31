@@ -2,11 +2,13 @@ import os
 import glob
 import argparse
 import math
-import numpy
+import numpy, cv2
 # functions and tools to process the original munich dataset
 
 DATASET_ROOT = '/Users/Forbest/Documents/Images/Aerial_images/MunichDatasetVehicleDetection-2015-old'
 SET_NAME = 'Train'
+SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 300, 80
+vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
 
 
 def get_number_of_vechiles(dataset_root, set_name):
@@ -47,7 +49,6 @@ def rotate_bbox_to_bbox (center, size, angle):
     height = size[1]
     X_rec = numpy.array([center[0] - width, center[0] - width, center[0] + width, center[0] + width, center[0] - width])
     Y_rec = numpy.array([center[1] - height, center[1] + height, center[1] + height, center[1] - height, center[1] - height])
-    # import pdb; pdb.set_trace()
     X_c = X_rec - center[0]
     Y_c = Y_rec - center[1]
     current_angle_d = -angle
@@ -75,9 +76,9 @@ def convert_single_image_vehicle_info(img_path, img_name):
     _truck.samp (22) ,        _truck_trail.samp(23),
     _van_trail (17)
 
-    """
-    vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
+    Note that the ground truth bounding box is annotated as [x1, x2, y1, y2].
 
+    """
     for type_i in vehicle_types.keys():
         type_i_samp_file = os.path.join(img_path, '{}_{}.samp'.format(img_name, type_i))
         # If there is the correspoing type in the image, get the values
@@ -104,6 +105,85 @@ def convert_single_image_vehicle_info(img_path, img_name):
                     f.write(write_str)
 
 
+def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
+    """
+    Crop a sub_image from the original image, and generate ground truth map if there are targets inside.
+
+    Note that the original labels are in the order of [x1, x2, y1, y2]
+
+    """
+    gt_file = os.path.join(img_path, '{}_bbox.gt'.format(img_name))
+    if not os.path.exists(gt_file):
+        print ('Have to genereate ground truth file for the image')
+    target_annos = []
+    with open(gt_file, "r") as reader:
+        cnt = 0
+        for line in reader:
+            cnt += 1
+            if cnt == 1:
+                continue
+            loc = [float(x) for x in line.strip().split()[:-1]]
+            # loc = list(map(int, loc))
+            cat_num = vehicle_types[line.strip().split()[-1]]
+            loc.append(cat_num)
+            target_annos.append(loc)
+
+    def twoboxes_overlap(box1, box2):
+        x1 = max(box1[0], box2[0])
+        x2 = min(box1[1], box2[1])
+        y1 = max(box1[2], box2[2])
+        y2 = min(box1[3], box2[3])
+        if x2 <= x1 or y2 <= y1:
+            return 0
+        return (x2 - x1) * (y2 - y1)
+
+    def select_subimage_anno(w, h):
+        select_box = []
+        for box in target_annos:
+            x1, x2, y1, y2, cat= box
+            x11, y11 = x1 - w, y1 - h
+            x22, y22 = x2 - w, y2 - h
+            gx1, gy1 = w, h
+            gx2, gy2 = w + SUB_IMG_WID, h + SUB_IMG_HEI
+            overlap_area = twoboxes_overlap(box, [gx1, gx2, gy1, gy2])
+            if overlap_area <= 0:
+                continue
+            new_box = [max(0, x11), max(0, x22), max(0, min(y11, SUB_IMG_WID)), min(y22, SUB_IMG_HEI), cat]
+            # If the overlap area is more than 70% of the original ground truth, this bounding box belongs to the new sub-image.
+            if overlap_area / ((x22 - x11) * (y22 - y11)) >= 0.7:
+                select_box.append(new_box)
+        return select_box
+
+    image_data = cv2.imread(os.path.join(img_path, '{}.JPG'.format(img_name)))
+    H, W = image_data.shape[:2]
+    cnt = 0
+    for h in range(0, H, SUB_IMG_HEI-SUB_OVERLAP):
+        for w in range(0, W, SUB_IMG_WID-SUB_OVERLAP):
+            if h + SUB_IMG_HEI >= H:
+                h = H - SUB_IMG_HEI
+            if w + SUB_IMG_WID >= W:
+                w = W - SUB_IMG_WID
+            cnt += 1
+            # Get the sub_image and its ground truth locations.
+            sub_image = image_data[h:h+SUB_IMG_HEI, w:w+SUB_IMG_WID]
+            select_annos = select_subimage_anno(w, h)
+            if len(select_annos) == 0:
+                continue
+
+            print(len(select_annos), select_annos)
+            for box in select_annos:
+                x1, x2, y1, y2, cat = box
+                # Use two points to draw in cv2.rectangle
+                cv2.rectangle(sub_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
+
+            save_image_path = os.path.join(save_path, "{}_{}_{}.jpg".format(img_name, w, h))
+            save_anno_path = os.path.join(save_path, "{}_{}_{}.txt".format(img_name, w, h))
+            cv2.imwrite(save_image_path, sub_image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+            with open(save_anno_path, "w") as writer:
+                for box in select_annos:
+                    writer.write(",".join(map(str, box)) + "\n")
+
+
 def convert_image_ground_truth(image_path):
     img_names = glob.glob(os.path.join(image_path, '*.JPG'))
     img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
@@ -122,4 +202,5 @@ if __name__ == '__main__':
 
     # num_vehicles = get_number_of_vechiles(dataset_root, set_name)
     # print ('Number of vehicles in {} is {}'.format(set_name, num_vehicles))
-    convert_image_ground_truth(dataset_root)
+    # convert_image_ground_truth(dataset_root)
+    crop_images_and_generate_groundtruth(dataset_root, img_name=set_name, save_path='/Users/Forbest/Desktop/temp')
