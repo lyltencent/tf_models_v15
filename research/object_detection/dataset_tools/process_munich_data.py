@@ -104,7 +104,7 @@ def convert_single_image_vehicle_info(img_path, img_name):
                     f.write(write_str)
 
 
-def conver_image_ground_truth(image_path):
+def convert_image_ground_truth(image_path):
     img_names = glob.glob(os.path.join(image_path, '*.JPG'))
     img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
     for img_name in img_names:
@@ -122,4 +122,4 @@ if __name__ == '__main__':
 
     # num_vehicles = get_number_of_vechiles(dataset_root, set_name)
     # print ('Number of vehicles in {} is {}'.format(set_name, num_vehicles))
-    conver_image_ground_truth(dataset_root)
+    convert_image_ground_truth(dataset_root)
