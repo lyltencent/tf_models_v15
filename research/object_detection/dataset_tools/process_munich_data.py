@@ -35,6 +35,32 @@ def get_number_of_vechiles(dataset_root, set_name):
     return num_vehicles
 
 
+def rotate_bbox_to_bbox (center, size, angle):
+    """
+    Convert the rotated bounding box annotation (center, size, angle) to VOC bounding box annotation (x1, x2, y1, y2)
+    :param center:
+    :param size:
+    :param angle:
+    :return:
+    """
+    width = size[0]
+    height = size[1]
+    X_rec = numpy.array([center[0] - width, center[0] - width, center[0] + width, center[0] + width, center[0] - width])
+    Y_rec = numpy.array([center[1] - height, center[1] + height, center[1] + height, center[1] - height, center[1] - height])
+    # import pdb; pdb.set_trace()
+    X_c = X_rec - center[0]
+    Y_c = Y_rec - center[1]
+    current_angle_d = -angle
+    current_angle_radian = math.radians(current_angle_d)
+    X_cc = math.cos(current_angle_radian)*X_c - math.sin(current_angle_radian)*Y_c
+    Y_cc = math.sin(current_angle_radian)*X_c + math.cos(current_angle_radian)*Y_c
+    X_cc = X_cc + center[0]
+    Y_cc = Y_cc + center[1]
+    # Create bounding box location in VOC 2007 format
+    x1, x2, y1, y2 = min(X_cc), max(X_cc), min(Y_cc), max(Y_cc)
+    return x1, x2, y1, y2
+
+
 def convert_single_image_vehicle_info(img_path, img_name):
     """
     For each image, there exist several *.samp files containing the object ground truth locations.
@@ -48,7 +74,6 @@ def convert_single_image_vehicle_info(img_path, img_name):
     _pkw_trail.samp (11),     _pkw.samp (10, 16),
     _truck.samp (22) ,        _truck_trail.samp(23),
     _van_trail (17)
-
 
     """
     vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
@@ -67,20 +92,12 @@ def convert_single_image_vehicle_info(img_path, img_name):
                 line_content = [float(x) for x in lines[idx].split()]
                 # Get the bounding box center location
                 center = line_content[2:4]
+                size = line_content[4:6]
                 vehicle_type = type_i
-                X_rec = numpy.array([center[0] - line_content[4], center[0] - line_content[4], center[0] + line_content[4], center[0] + line_content[4], center[0] - line_content[4]])
-                Y_rec = numpy.array([center[1] - line_content[5], center[1] + line_content[5], center[1] + line_content[5], center[1] - line_content[5], center[1] - line_content[5]])
-                # import pdb; pdb.set_trace()
-                X_c = X_rec - center[0]
-                Y_c = Y_rec - center[1]
-                current_angle_d = -line_content[-1]
-                current_angle_radian = math.radians(current_angle_d)
-                X_cc = math.cos(current_angle_radian)*X_c - math.sin(current_angle_radian)*Y_c
-                Y_cc = math.sin(current_angle_radian)*X_c + math.cos(current_angle_radian)*Y_c
-                X_cc = X_cc + center[0]
-                Y_cc = Y_cc + center[1]
-                # Create bounding box location in VOC 2007 format
-                x1, x2, y1, y2 = min(X_cc), max(X_cc), min(Y_cc), max(Y_cc)
+                # get the angle in radians
+                angle = line_content[-1]
+                x1, x2, y1, y2 = rotate_bbox_to_bbox(center, size, angle)
+
                 file_name = os.path.join(img_path, '{}_bbox.gt'.format(img_name))
                 with open(file_name, 'a+') as f:
                     write_str = '{} {} {} {} {} \n'.format(x1, x2, y1, y2, vehicle_type)
