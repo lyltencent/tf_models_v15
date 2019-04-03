@@ -163,7 +163,7 @@ def main(argv):
     eval_config = configs['eval_config']
     input_config = configs['eval_input_config']
 
-    metrics = read_data_and_evaluate(input_config, eval_config)
+    metrics, pr_vales = read_data_and_evaluate(input_config, eval_config)
 
     # Save metrics
     write_metrics(metrics, FLAGS.eval_dir)
