@@ -58,6 +58,44 @@ def scale_transfer_module(features):
     return output_features
 
 
+def combine_and_scale_transfer_module(features):
+    output_features = {}
+    #  35 x 35 x 288.
+    end_point = 'Mixed_5d'
+    features_5d = features[end_point]
+
+    #  17 x 17 x 768.
+    end_point = 'Mixed_6e'
+    features_6e = features[end_point]
+    tmp = slim.max_pool2d(features_5d, [3, 3], scope='MaxPool_0a_3x3')
+    features_6e_and_5d = tf.concat(axis=3, values=[features_6e, tmp])
+
+    # 8 x 8 x 1280
+    feature1 = features['Mixed_7a']
+    # 8 x 8 x 2048
+    feature2 = features['Mixed_7b']
+    # 8 x 8 x 2048
+    feature3 = features['Mixed_7c']
+    tmp = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
+    features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
+
+    #  35 x 35 x 288.
+    output_features['Mixed_5d'] = features_5d
+    #  17 x 17 x 768
+    output_features['Mixed_6e_5d'] = features_6e_and_5d
+    # 8 x 8 x 2048
+    output_features['Mixed_7c_6e_5d'] = features_combine_all
+
+    # output_features['Mixed_7a_upscale'] = feature1_tr
+    output_features['Mixed_7b_upscale'] = tf.depth_to_space(feature2, 2)
+    output_features['Mixed_7c_upscale'] = tf.depth_to_space(feature3, 4)
+
+    # Also add the original spatial resolution.
+    output_features['Mixed_7a'] = feature1
+
+    return output_features
+
+
 class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
     """STDN Feature Extractor using InceptionV3 features."""
 
@@ -137,6 +175,7 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                         scope=scope)
 
                     # Scale Transfer Module
-                    image_features = scale_transfer_module(image_features)
+                    # image_features = scale_transfer_module(image_features)
+                    image_features = combine_and_scale_transfer_module(image_features)
         # return a list of feature maps
         return image_features.values()
