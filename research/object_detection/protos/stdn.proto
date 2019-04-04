@@ -11,7 +11,7 @@ import "object_detection/protos/losses.proto";
 import "object_detection/protos/post_processing.proto";
 import "object_detection/protos/region_similarity_calculator.proto";
 
-// Configuration for Single Shot Detection (SSD) models.
+// Configuration for Scale Transfer Detection Network (STDN) models.
 message Stdn {
 
   // Number of classes to predict.
