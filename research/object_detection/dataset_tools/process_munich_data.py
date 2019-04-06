@@ -262,7 +262,7 @@ if __name__ == '__main__':
 
     if set_name.lower() == 'train':
         SUB_OVERLAP = 80
-    else
+    else: 
         SUB_OVERLAP = 10
 
     for image_name in img_names:
