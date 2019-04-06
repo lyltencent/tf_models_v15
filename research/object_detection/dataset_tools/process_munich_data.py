@@ -8,7 +8,7 @@ import random
 
 DATASET_ROOT = '/Users/Forbest/Documents/Images/Aerial_images/MunichDatasetVehicleDetection-2015-old'
 SET_NAME = 'Train'
-SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 300, 10
+SUB_IMG_WID, SUB_IMG_HEI = 300, 300
 vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
 
 
@@ -259,8 +259,16 @@ if __name__ == '__main__':
     img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
     import pdb; pdb.set_trace()
     print('Cropping images into training set \n')
+
+    if set_name.lower() == 'train':
+        SUB_OVERLAP = 80
+    else
+        SUB_OVERLAP = 10
+
     for image_name in img_names:
         crop_images_and_generate_groundtruth(os.path.join(dataset_root, set_name), img_name=image_name, save_path=save_path)
     # print('Generate train.txt and val.txt. \n')
-    # if set_name.lower() == 'train':
-    #     split_train_val_set(os.path.join(dataset_root, 'Train_crop'), 0.85)
+    if set_name.lower() == 'train':
+        split_train_val_set(os.path.join(dataset_root, 'Train_crop'), 0.85)
+    if set_name.lower() == 'test':
+        get_test_txt(os.path.join(dataset_root, 'Test_crop'))
