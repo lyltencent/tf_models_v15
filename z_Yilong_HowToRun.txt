@@ -85,3 +85,7 @@ python object_detection/metrics/offline_eval_map_corloc.py --eval_dir=./images_m
 
 SSD:
 python object_detection/metrics/offline_eval_map_corloc.py --eval_config_path=./images_metrics/SSD/munich_test_detections_eval_config.pbtxt --input_config_path=./images_metrics/SSD/munich_test_detections_input_config.pbtxt --eval_dir=./images_metrics/SSD/
+
+3. Run evaluation and get logs.
+Evaluation:
+python object_detection/eval.py --logtostderr --pipeline_config_path=./object_detection/samples/configs/faster_rcnn_resnet101_pets.config --checkpoint_dir=./object_detection/0_train_dir/ --eval_dir=./object_detection/0_eval_dir/
