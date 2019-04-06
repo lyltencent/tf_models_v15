@@ -7,7 +7,7 @@ import numpy, cv2
 
 DATASET_ROOT = '/Users/Forbest/Documents/Images/Aerial_images/MunichDatasetVehicleDetection-2015-old'
 SET_NAME = 'Train'
-SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 300, 80
+SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 600, 80
 vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
 
 
@@ -150,7 +150,7 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
             if overlap_area <= 0:
                 continue
             # bbox = [xmin, ymin, xmax, ymax]
-            new_box = [max(0, x11), max(0, min(y11, SUB_IMG_WID)), max(0, x22), min(y22, SUB_IMG_HEI), cat]
+            new_box = [max(0, x11), max(0, min(y11, SUB_IMG_HEI)), max(0, x22), min(y22, SUB_IMG_HEI), cat]
             # If the overlap area is more than 70% of the original ground truth, this bounding box belongs to the new sub-image.
             if overlap_area / ((x22 - x11) * (y22 - y11)) >= 0.7:
                 select_box.append(new_box)
@@ -216,6 +216,7 @@ if __name__ == '__main__':
     # For each image, crop sub images and generate corresponding groundtruth
     img_names = glob.glob(os.path.join(os.path.join(dataset_root, set_name), '*.JPG'))
     img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
+    import pdb; pdb.set_trace()
     for image_name in img_names:
         crop_images_and_generate_groundtruth(os.path.join(dataset_root, set_name), img_name=image_name, save_path=save_path)
 
