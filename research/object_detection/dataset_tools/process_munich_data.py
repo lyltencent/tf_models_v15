@@ -3,20 +3,13 @@ import glob
 import argparse
 import math
 import numpy, cv2
+import random
 # functions and tools to process the original munich dataset
 
 DATASET_ROOT = '/Users/Forbest/Documents/Images/Aerial_images/MunichDatasetVehicleDetection-2015-old'
 SET_NAME = 'Train'
-SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 300, 80
+SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 300, 10
 vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
-
-"""
-% Used class: 
-% Car: ca + van = pkw => 10,16 => make both as 10 
-% Truck: truck + cam => 20,22 = > make both as 20
-
-Ignore the rest classes. 
-"""
 
 
 def get_number_of_vechiles(dataset_root, set_name):
@@ -190,7 +183,7 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
                     cv2.rectangle(sub_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
 
             save_image_path = os.path.join(save_path, "{}_{}_{}.jpg".format(img_name, w, h))
-            save_anno_path = os.path.join(save_path, "{}_{}_{}.txt".format(img_name, w, h))
+            save_anno_path = os.path.join(save_path, "{}_{}_{}_gt.txt".format(img_name, w, h))
             cv2.imwrite(save_image_path, sub_image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
             with open(save_anno_path, "w") as writer:
                 for box in select_annos:
@@ -204,6 +197,46 @@ def convert_image_ground_truth(image_path):
         convert_single_image_vehicle_info(image_path, img_name)
 
 
+def split_train_val_set(crop_image_path, ratio=0.8):
+    """
+    crop_image_path: path containing the crop images and their ground truth files
+    :param crop_image_path:
+    :param ratio: ratio of training examples from training data.
+    :return:
+    """
+    filenames = glob.glob(os.path.join(crop_image_path, '*.jpg'))
+    filenames.sort()  # make sure that the filenames have a fixed order before shuffling
+    random.seed(230)
+    random.shuffle(filenames) # shuffles the ordering of filenames (deterministic given the chosen seed)
+
+    # 80% of the training data is used for traning, the rest 15% used for validation
+    split_1 = int(ratio * len(filenames))
+    train_filenames = filenames[:split_1]
+    val_filenames = filenames[split_1:]
+
+    # Save the file name into two txt files: 'train.txt' and 'val.txt'
+    train_filenames = [os.path.splitext(os.path.basename(x))[0] for x in train_filenames]
+    val_filenames = [os.path.splitext(os.path.basename(x))[0] for x in val_filenames]
+    train_file = os.path.join(crop_image_path, 'train.txt')
+    with open(train_file, 'w') as f:
+        f.write("\n".join(train_filenames))
+
+    val_file = os.path.join(crop_image_path, 'val.txt')
+    with open(val_file, 'w') as f:
+        f.write("\n".join(val_filenames))
+
+
+def get_test_txt(crop_image_path):
+    test_filenames = glob.glob(os.path.join(crop_image_path, '*.jpg'))
+    test_filenames.sort()
+    test_filenames = [os.path.splitext(os.path.basename(x))[0] for x in test_filenames]
+    test_file = os.path.join(crop_image_path, 'test.txt')
+    with open(test_file, 'w') as f:
+        f.write("\n".join(test_filenames))
+
+
+
+
 if __name__ == '__main__':
     # Load arguments.
     parser = argparse.ArgumentParser(description='Tools to read and create ground for Munich dataset')
@@ -215,7 +248,7 @@ if __name__ == '__main__':
     dataset_root = args.dataset_root
     set_name = args.set_name
     save_path = args.save_path
-    DRAW_BBOX=args.DRAW_BBOX
+    DRAW_BBOX = args.DRAW_BBOX
 
     num_vehicles = get_number_of_vechiles(dataset_root, set_name)
     print ('Number of vehicles in {} is {}'.format(set_name, num_vehicles))
@@ -225,7 +258,9 @@ if __name__ == '__main__':
     img_names = glob.glob(os.path.join(os.path.join(dataset_root, set_name), '*.JPG'))
     img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
     import pdb; pdb.set_trace()
+    print('Cropping images into training set \n')
     for image_name in img_names:
         crop_images_and_generate_groundtruth(os.path.join(dataset_root, set_name), img_name=image_name, save_path=save_path)
-
-
+    # print('Generate train.txt and val.txt. \n')
+    # if set_name.lower() == 'train':
+    #     split_train_val_set(os.path.join(dataset_root, 'Train_crop'), 0.85)

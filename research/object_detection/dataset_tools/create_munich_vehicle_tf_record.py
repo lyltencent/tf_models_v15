@@ -44,15 +44,33 @@ flags.DEFINE_boolean('ignore_difficult_instances', False, 'Whether to ignore '
                                                           'difficult instances')
 FLAGS = flags.FLAGS
 
-SETS = ['train', 'test']
-EXAMPLES_PATHS = {'train': 'Train_crop_set',
-                  'test': 'Test_crop_set'}
-# Ground truth labels from website starts with mapping: 10-> car, 20 -> truck
-OBJ_NAME = {10: 'car',
-            20: 'truck'}
+SETS = ['train', 'val', 'test']
+EXAMPLES_PATHS = {'train': 'Train_crop',
+                  'test': 'Test_crop'}
+
+#
+"""
+vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
+
+% Used class: 
+% Car: ca + van = pkw => 10,16 => make both as 10 
+% Truck: truck + cam => 20,22 = > make both as 20
+
+Ignore the rest classes. 
+"""
+
+
+# Experiment 1: Ground truth labels from website starts with mapping: 10-> car, 20 -> truck
+# OBJ_NAME = {10: 'car',
+#             20: 'truck'}
+# # USED LABELS starts from 1.
+# USE_LABEL = {10: 1,
+#              20: 2}
+
+# Experiment 2: Assign all vehicles as one type:
+OBJ_NAME = {30: 'vehicle', 20: 'vehicle', 11: 'vehicle', 10: 'vehicle', 22: 'vehicle', 23: 'vehicle', 17: 'vehicle'}
 # USED LABELS starts from 1.
-USE_LABEL = {10: 1,
-             20: 2}
+USE_LABEL = {30: 1, 20: 1, 11: 1, 10: 1, 22: 1, 23: 1, 17: 1}
 
 
 def dict_to_tf_example(split_data_dir,
@@ -139,7 +157,6 @@ def main(_):
     data_dir = FLAGS.data_dir
     writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
     label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)
-
     # List of example images for the set (train/val)
     examples_path = os.path.join(data_dir, EXAMPLES_PATHS[FLAGS.set], FLAGS.set + '.txt')
     examples_list = dataset_util.read_examples_list(examples_path)
