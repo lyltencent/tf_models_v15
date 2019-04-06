@@ -37,7 +37,7 @@ def get_number_of_vechiles(dataset_root, set_name):
     return num_vehicles
 
 
-def rotate_bbox_to_bbox (center, size, angle):
+def rotate_bbox_to_bbox(center, size, angle):
     """
     Convert the rotated bounding box annotation (center, size, angle) to VOC bounding box annotation (x1, x2, y1, y2)
     :param center:
@@ -76,7 +76,7 @@ def convert_single_image_vehicle_info(img_path, img_name):
     _truck.samp (22) ,        _truck_trail.samp(23),
     _van_trail (17)
 
-    Note that the ground truth bounding box is annotated as [x1, x2, y1, y2].
+    Note that the ground truth bounding box is annotated as [x1, x2, y1, y2, vehicle_type].
 
     """
     for type_i in vehicle_types.keys():
@@ -165,7 +165,8 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
                 w = W - SUB_IMG_WID
             cnt += 1
             # Get the sub_image and its ground truth locations.
-            sub_image = image_data[h:h+SUB_IMG_HEI, w:w+SUB_IMG_WID]
+            clone_image = image_data.copy()
+            sub_image = clone_image[h:h+SUB_IMG_HEI, w:w+SUB_IMG_WID]
             select_annos = select_subimage_anno(w, h)
             if len(select_annos) == 0:
                 continue
@@ -196,11 +197,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Tools to read and create ground for Munich dataset')
     parser.add_argument('-i', '--dataset_root', type=str, default=DATASET_ROOT)
     parser.add_argument('-s', '--set_name', type=str, default=SET_NAME)
+    parser.add_argument('-o', '--save_path', type=str, default='')
     args = parser.parse_args()
     dataset_root = args.dataset_root
     set_name = args.set_name
+    save_path = args.save_path
 
-    # num_vehicles = get_number_of_vechiles(dataset_root, set_name)
-    # print ('Number of vehicles in {} is {}'.format(set_name, num_vehicles))
-    # convert_image_ground_truth(dataset_root)
-    crop_images_and_generate_groundtruth(dataset_root, img_name=set_name, save_path='/Users/Forbest/Desktop/temp')
+    num_vehicles = get_number_of_vechiles(dataset_root, set_name)
+    print ('Number of vehicles in {} is {}'.format(set_name, num_vehicles))
+    # Generate ground truth for images by combining different samp files.
+    convert_image_ground_truth(os.path.join(dataset_root, set_name))
+    # For each image, crop sub images and generate corresponding groundtruth
+    img_names = glob.glob(os.path.join(os.path.join(dataset_root, set_name), '*.JPG'))
+    img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
+    for image_name in img_names:
+        crop_images_and_generate_groundtruth(os.path.join(dataset_root, set_name), img_name=image_name, save_path=save_path)
+
+
