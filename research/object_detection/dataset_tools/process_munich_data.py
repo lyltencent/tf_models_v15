@@ -7,8 +7,16 @@ import numpy, cv2
 
 DATASET_ROOT = '/Users/Forbest/Documents/Images/Aerial_images/MunichDatasetVehicleDetection-2015-old'
 SET_NAME = 'Train'
-SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 600, 80
+SUB_IMG_WID, SUB_IMG_HEI, SUB_OVERLAP = 300, 300, 80
 vehicle_types = {'bus': 30, 'cam': 20, 'pkw_trail': 11, 'pkw': 10, 'truck': 22, 'truck_trail': 23, 'van_trail': 17}
+
+"""
+% Used class: 
+% Car: ca + van = pkw => 10,16 => make both as 10 
+% Truck: truck + cam => 20,22 = > make both as 20
+
+Ignore the rest classes. 
+"""
 
 
 def get_number_of_vechiles(dataset_root, set_name):
