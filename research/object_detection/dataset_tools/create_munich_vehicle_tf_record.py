@@ -144,7 +144,6 @@ def main(_):
     examples_path = os.path.join(data_dir, EXAMPLES_PATHS[FLAGS.set], FLAGS.set + '.txt')
     examples_list = dataset_util.read_examples_list(examples_path)
     print(len(examples_list))
-    # pdb.set_trace()
     for idx, example in enumerate(examples_list):
         if idx % 100 == 0:
             logging.info('On image %d of %d', idx, len(examples_list))

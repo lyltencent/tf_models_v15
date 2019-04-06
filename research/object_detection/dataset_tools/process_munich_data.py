@@ -39,7 +39,7 @@ def get_number_of_vechiles(dataset_root, set_name):
 
 def rotate_bbox_to_bbox(center, size, angle):
     """
-    Convert the rotated bounding box annotation (center, size, angle) to VOC bounding box annotation (x1, x2, y1, y2)
+    Convert the rotated bounding box annotation (center, size, angle) to VOC bounding box annotation (x1, y1, x2, y2)
     :param center:
     :param size:
     :param angle:
@@ -58,8 +58,8 @@ def rotate_bbox_to_bbox(center, size, angle):
     X_cc = X_cc + center[0]
     Y_cc = Y_cc + center[1]
     # Create bounding box location in VOC 2007 format
-    x1, x2, y1, y2 = min(X_cc), max(X_cc), min(Y_cc), max(Y_cc)
-    return x1, x2, y1, y2
+    x1, y1, x2, y2 = min(X_cc), min(Y_cc), max(X_cc), max(Y_cc)
+    return x1, y1, x2, y2
 
 
 def convert_single_image_vehicle_info(img_path, img_name):
@@ -76,7 +76,7 @@ def convert_single_image_vehicle_info(img_path, img_name):
     _truck.samp (22) ,        _truck_trail.samp(23),
     _van_trail (17)
 
-    Note that the ground truth bounding box is annotated as [x1, x2, y1, y2, vehicle_type].
+    Note that the ground truth bounding box is annotated as [x1, y1, x2, y2, vehicle_type].
 
     """
     for type_i in vehicle_types.keys():
@@ -97,11 +97,11 @@ def convert_single_image_vehicle_info(img_path, img_name):
                 vehicle_type = type_i
                 # get the angle in radians
                 angle = line_content[-1]
-                x1, x2, y1, y2 = rotate_bbox_to_bbox(center, size, angle)
+                x1, y1, x2, y2 = rotate_bbox_to_bbox(center, size, angle)
 
                 file_name = os.path.join(img_path, '{}_bbox.gt'.format(img_name))
                 with open(file_name, 'a+') as f:
-                    write_str = '{} {} {} {} {} \n'.format(x1, x2, y1, y2, vehicle_type)
+                    write_str = '{} {} {} {} {} \n'.format(x1, y1, x2, y2, vehicle_type)
                     f.write(write_str)
 
 
@@ -109,10 +109,11 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
     """
     Crop a sub_image from the original image, and generate ground truth map if there are targets inside.
 
-    Note that the original labels are in the order of [x1, x2, y1, y2]
+    Note that the original labels are in the order of [x1, y1, x2, y2]
 
     """
     gt_file = os.path.join(img_path, '{}_bbox.gt'.format(img_name))
+    # Coordinates in gt_file is in the order of [x1, y1, x2, y2]
     if not os.path.exists(gt_file):
         print ('Have to genereate ground truth file for the image')
     target_annos = []
@@ -130,8 +131,8 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
 
     def twoboxes_overlap(box1, box2):
         x1 = max(box1[0], box2[0])
-        x2 = min(box1[1], box2[1])
-        y1 = max(box1[2], box2[2])
+        y1 = max(box1[1], box2[1])
+        x2 = min(box1[2], box2[2])
         y2 = min(box1[3], box2[3])
         if x2 <= x1 or y2 <= y1:
             return 0
@@ -140,15 +141,16 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
     def select_subimage_anno(w, h):
         select_box = []
         for box in target_annos:
-            x1, x2, y1, y2, cat= box
+            x1, y1, x2, y2, cat= box
             x11, y11 = x1 - w, y1 - h
             x22, y22 = x2 - w, y2 - h
             gx1, gy1 = w, h
             gx2, gy2 = w + SUB_IMG_WID, h + SUB_IMG_HEI
-            overlap_area = twoboxes_overlap(box, [gx1, gx2, gy1, gy2])
+            overlap_area = twoboxes_overlap(box, [gx1, gy1, gx2, gy2])
             if overlap_area <= 0:
                 continue
-            new_box = [max(0, x11), max(0, x22), max(0, min(y11, SUB_IMG_WID)), min(y22, SUB_IMG_HEI), cat]
+            # bbox = [xmin, ymin, xmax, ymax]
+            new_box = [max(0, x11), max(0, min(y11, SUB_IMG_WID)), max(0, x22), min(y22, SUB_IMG_HEI), cat]
             # If the overlap area is more than 70% of the original ground truth, this bounding box belongs to the new sub-image.
             if overlap_area / ((x22 - x11) * (y22 - y11)) >= 0.7:
                 select_box.append(new_box)
@@ -167,15 +169,17 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
             # Get the sub_image and its ground truth locations.
             clone_image = image_data.copy()
             sub_image = clone_image[h:h+SUB_IMG_HEI, w:w+SUB_IMG_WID]
+            # select_annos: [x1, y1, x2, y2]
             select_annos = select_subimage_anno(w, h)
             if len(select_annos) == 0:
                 continue
 
             print(len(select_annos), select_annos)
-            for box in select_annos:
-                x1, x2, y1, y2, cat = box
-                # Use two points to draw in cv2.rectangle
-                cv2.rectangle(sub_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
+            if DRAW_BBOX:
+                for box in select_annos:
+                    x1, y1, x2, y2, cat = box
+                    # Use two points to draw in cv2.rectangle
+                    cv2.rectangle(sub_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
 
             save_image_path = os.path.join(save_path, "{}_{}_{}.jpg".format(img_name, w, h))
             save_anno_path = os.path.join(save_path, "{}_{}_{}.txt".format(img_name, w, h))
@@ -198,10 +202,12 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--dataset_root', type=str, default=DATASET_ROOT)
     parser.add_argument('-s', '--set_name', type=str, default=SET_NAME)
     parser.add_argument('-o', '--save_path', type=str, default='')
+    parser.add_argument('--draw_bbox', action='store_true', dest='DRAW_BBOX', required=False, help='DRAW bbox on croped images or not')
     args = parser.parse_args()
     dataset_root = args.dataset_root
     set_name = args.set_name
     save_path = args.save_path
+    DRAW_BBOX=args.DRAW_BBOX
 
     num_vehicles = get_number_of_vechiles(dataset_root, set_name)
     print ('Number of vehicles in {} is {}'.format(set_name, num_vehicles))
