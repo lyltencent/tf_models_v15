@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import tensorflow as tf
-
+import glob
 from matplotlib import pyplot as plt
 from PIL import Image
 from utils import label_map_util
@@ -54,7 +54,8 @@ def main(_):
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
     # Step 3: Get the list of image names
-    TEST_IMAGE_PATHS = [os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image_{}.jpg'.format(i)) for i in range(1, 11)]
+    TEST_IMAGE_PATHS = glob.glob(os.path.join(PATH_TO_TEST_IMAGES_DIR, '*.jpg'))
+    # TEST_IMAGE_PATHS = [os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image_{}.jpg'.format(i)) for i in range(1, 11)]
     # Size, in inches, of the output images.
     IMAGE_SIZE = (12, 8)
     if not os.path.exists(RESULT_VIS_PATH):
