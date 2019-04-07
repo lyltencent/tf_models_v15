@@ -168,6 +168,17 @@ def main(argv):
     # Save metrics
     write_metrics(metrics, FLAGS.eval_dir)
 
+    # Additional: Write Precision and recall values (array)
+    precisions = pr_vales.values()[0]['precisions']
+    recalls = pr_vales.values()[0]['recalls']
+
+    precision_file = os.path.join(FLAGS.eval_dir, 'precisons.txt')
+    recall_file = os.path.join(FLAGS.eval_dir, 'realls.txt')
+    with open(precision_file, 'w') as f:
+        f.write(precisions)
+    with open(recall_file, 'w') as f:
+        f.write(recalls)
+    ################
 
 if __name__ == '__main__':
     tf.app.run(main)
