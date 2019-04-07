@@ -307,10 +307,12 @@ def _run_checkpoint_once(tensor_dict,
                     # decoders to return correct image_id.
                     # TODO: result_dict contains batches of images, while
                     # add_single_ground_truth_image_info expects a single image. Fix
-                    evaluator.add_single_ground_truth_image_info(
-                        image_id=batch, groundtruth_dict=result_dict)
-                    evaluator.add_single_detected_image_info(
-                        image_id=batch, detections_dict=result_dict)
+                    # Yilong, make sure that rsult_dict is not empty
+                    if not result_dict:
+                        evaluator.add_single_ground_truth_image_info(
+                            image_id=batch, groundtruth_dict=result_dict)
+                        evaluator.add_single_detected_image_info(
+                            image_id=batch, detections_dict=result_dict)
             logging.info('Running eval batches done.')
         except tf.errors.OutOfRangeError:
             logging.info('Done evaluating -- epoch limit reached')
