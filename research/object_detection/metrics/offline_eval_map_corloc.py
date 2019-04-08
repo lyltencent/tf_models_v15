@@ -175,9 +175,11 @@ def main(argv):
     precision_file = os.path.join(FLAGS.eval_dir, 'precisons.txt')
     recall_file = os.path.join(FLAGS.eval_dir, 'realls.txt')
     with open(precision_file, 'w') as f:
-        f.write(precisions)
+        for item in precisions:
+            f.write("%s\n" % item)
     with open(recall_file, 'w') as f:
-        f.write(recalls)
+        for item in recalls:
+            f.write("%s\n" % item)
     ################
 
 if __name__ == '__main__':
