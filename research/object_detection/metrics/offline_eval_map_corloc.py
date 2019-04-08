@@ -163,23 +163,36 @@ def main(argv):
     eval_config = configs['eval_config']
     input_config = configs['eval_input_config']
 
-    metrics, pr_vales = read_data_and_evaluate(input_config, eval_config)
+    metrics, pr_values = read_data_and_evaluate(input_config, eval_config)
 
     # Save metrics
     write_metrics(metrics, FLAGS.eval_dir)
 
     # Additional: Write Precision and recall values (array)
-    precisions = pr_vales.values()[0]['precisions']
-    recalls = pr_vales.values()[0]['recalls']
-
-    precision_file = os.path.join(FLAGS.eval_dir, 'precisons.txt')
-    recall_file = os.path.join(FLAGS.eval_dir, 'realls.txt')
-    with open(precision_file, 'w') as f:
-        for item in precisions:
-            f.write("%s\n" % item)
-    with open(recall_file, 'w') as f:
-        for item in recalls:
-            f.write("%s\n" % item)
+    # Get the number of categories:
+    category_list = pr_values.keys()
+    for cat in category_list:
+        precisions = pr_values[cat]['precisions']
+        recalls = pr_values[cat]['recalls']
+        precision_file = os.path.join(FLAGS.eval_dir, '{}_{}'.format(cat, 'precisons.txt'))
+        recall_file = os.path.join(FLAGS.eval_dir, '{}_{}'.format(cat, 'recalls.txt'))
+        with open(precision_file, 'w') as f:
+            for item in precisions:
+                f.write("%s\n" % item)
+        with open(recall_file, 'w') as f:
+            for item in recalls:
+                f.write("%s\n" % item)
+    # precisions = pr_values.values()[0]['precisions']
+    # recalls = pr_values.values()[0]['recalls']
+    #
+    # precision_file = os.path.join(FLAGS.eval_dir, 'precisons.txt')
+    # recall_file = os.path.join(FLAGS.eval_dir, 'realls.txt')
+    # with open(precision_file, 'w') as f:
+    #     for item in precisions:
+    #         f.write("%s\n" % item)
+    # with open(recall_file, 'w') as f:
+    #     for item in recalls:
+    #         f.write("%s\n" % item)
     ################
 
 if __name__ == '__main__':
