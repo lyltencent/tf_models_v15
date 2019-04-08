@@ -151,7 +151,7 @@ def crop_images_and_generate_groundtruth(img_path, img_name, save_path):
             if overlap_area <= 0:
                 continue
             # bbox = [xmin, ymin, xmax, ymax]
-            new_box = [max(0, x11), max(0, min(y11, SUB_IMG_HEI)), max(0, x22), min(y22, SUB_IMG_HEI), cat]
+            new_box = [max(0, min(x11, SUB_IMG_WID)), max(0, min(y11, SUB_IMG_HEI)), min(SUB_IMG_WID, max(0, x22)), min(y22, SUB_IMG_HEI), cat]
             # If the overlap area is more than 70% of the original ground truth, this bounding box belongs to the new sub-image.
             if overlap_area / ((x22 - x11) * (y22 - y11)) >= 0.7:
                 select_box.append(new_box)
