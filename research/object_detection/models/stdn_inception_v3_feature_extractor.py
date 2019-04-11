@@ -96,6 +96,38 @@ def combine_and_scale_transfer_module(features):
     return output_features
 
 
+def combine_and_scale_transfer_module_v2(features):
+    output_features = {}
+    #  17 x 17 x 768.
+    end_point = 'Mixed_6e'
+    features_6e = features[end_point]
+    # 8 x 8 x 768
+    feature_6e_pool = slim.max_pool2d(features_6e, [3,3], scope='MaxPool_3x3')
+
+    # Second, create new feature maps.
+    # 8 x 8 x 1280
+    feature1 = features['Mixed_7a']
+    # 8 x 8 x 2048
+    feature2 = features['Mixed_7b']
+    # 8 x 8 x 2048
+    feature3 = features['Mixed_7c']
+    # 8 x 8 x 2048
+    feature4 = tf.concat(axis=3, values=[feature_6e_pool, feature1])
+    # 8 x 8 x (2048 + 768) = 8 x 8 x 2816
+    feature5 = tf.concat(axis=3, values=[feature_6e_pool, feature2])
+    # 8 x 8 x (2048 + 768) = 8 x 8 x 2816
+    feature6 = tf.concat(axis=3, values=[feature_6e_pool, feature3])
+
+    output_features['Mixed_7a_pool'] = slim.avg_pool2d(feature1, [8,8], scope='AvgPool_8x8')
+    output_features['Mixed_7b_pool'] = slim.avg_pool2d(feature2, [4,4], scope='AvgPool_4x4')
+    output_features['Mixed_7c_pool'] = slim.avg_pool2d(feature3, [2,2], scope='AvgPool_2x2')
+    output_features['Mixed_7a_6e'] = feature4
+    output_features['Mixed_7b_6e_upscale'] = tf.depth_to_space(feature5, 2)
+    output_features['Mixed_7c_6e_upsacle'] = tf.depth_to_space(feature6, 4)
+
+    return output_features
+
+
 def scale_transfer_module_v2(features):
     """
     STM based on last 6 layers of inception_v3 net:
@@ -215,8 +247,11 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                     # 1. STDN_vesion_1
                     # image_features = scale_transfer_module(image_features)
                     # 2. STDN version + combine mode
-                    image_features = combine_and_scale_transfer_module(image_features)
+                    # image_features = combine_and_scale_transfer_module(image_features)
                     # 3. STDN vesion2: result is worse than (2)
                     # image_features = scale_transfer_module_v2(image_features)
+                    # 4. STDN combine_tansfer_v2
+                    image_features = combine_and_scale_transfer_module_v2(image_features)
+
         # return a list of feature maps
         return image_features.values()
