@@ -215,8 +215,8 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                     # 1. STDN_vesion_1
                     # image_features = scale_transfer_module(image_features)
                     # 2. STDN version + combine mode
-                    # image_features = combine_and_scale_transfer_module(image_features)
-                    # 3. STDN vesion2
-                    image_features = scale_transfer_module_v2(image_features)
+                    image_features = combine_and_scale_transfer_module(image_features)
+                    # 3. STDN vesion2: result is worse than (2)
+                    # image_features = scale_transfer_module_v2(image_features)
         # return a list of feature maps
         return image_features.values()
