@@ -259,6 +259,10 @@ class STDNMetaArch(model.DetectionModel):
               [batch, height_i, width_i, depth_i].
             4) anchors: 2-D float tensor of shape [num_anchors, 4] containing
               the generated anchors in normalized coordinates.
+
+
+        Procedures: preprocess_inputs -> extract features (get feature maps) -> Generate anchors ->
+                    get box predictions for each feature map -> assemble prediction dictionary. 
         """
         with tf.variable_scope(None, self._extract_features_scope,
                                [preprocessed_inputs]):
