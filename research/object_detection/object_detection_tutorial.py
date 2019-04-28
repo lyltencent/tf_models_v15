@@ -6,7 +6,8 @@ from matplotlib import pyplot as plt
 from PIL import Image
 from utils import label_map_util
 from utils import visualization_utils as vis_util
-
+import time
+import numpy as np
 
 def load_image_into_numpy_array(image):
     (im_width, im_height) = image.size
@@ -60,6 +61,7 @@ def main(_):
     IMAGE_SIZE = (12, 8)
     if not os.path.exists(RESULT_VIS_PATH):
         os.makedirs(RESULT_VIS_PATH)
+    inferece_time = []
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
             image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
@@ -78,10 +80,13 @@ def main(_):
                 # expand dimensions sinc eth model expects image to have shape [1, None, None, 3]
                 image_np_expanded = np.expand_dims(image_np, axis=0)
                 # Actual detection.
+                start_time = time.time()
                 (boxes, scores, classes, num) =  sess.run(
                     [detection_boxes, detection_scores, detection_classes, num_detections],
                     feed_dict={image_tensor: image_np_expanded}
                 )
+                elapse_time = time.time() - start_time
+                inferece_time.append(elapse_time)
                 vis_util.visualize_boxes_and_labels_on_image_array(
                     image_np,
                     np.squeeze(boxes),
@@ -91,7 +96,7 @@ def main(_):
                     use_normalized_coordinates=True,
                     line_thickness=3)
                 plt.imsave(os.path.join(RESULT_VIS_PATH, os.path.basename(image_path)), image_np)
-
+    print ("Speed of testing is {} seconds/frame".format(np.mean(inferece_time)))
 
 if __name__ == '__main__':
     tf.app.run()
