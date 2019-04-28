@@ -98,5 +98,6 @@ def main(_):
                 plt.imsave(os.path.join(RESULT_VIS_PATH, os.path.basename(image_path)), image_np)
     print ("Speed of testing is {} seconds/frame".format(np.mean(inferece_time)))
 
+
 if __name__ == '__main__':
     tf.app.run()
