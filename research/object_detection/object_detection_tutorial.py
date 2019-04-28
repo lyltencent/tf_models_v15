@@ -97,7 +97,7 @@ def main(_):
                     line_thickness=3)
                 plt.imsave(os.path.join(RESULT_VIS_PATH, os.path.basename(image_path)), image_np)
     print ("Time elapsed for each frame = {}".format(inferece_time))
-    print ("Speed of testing is {} seconds/frame".format(np.mean(inferece_time)))
+    print ("Speed of testing is {} seconds/frame".format(np.mean(inferece_time[1:])))
 
 
 if __name__ == '__main__':
