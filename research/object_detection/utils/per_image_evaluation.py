@@ -64,7 +64,7 @@ class PerImageEvaluation(object):
               Each row is of the format [y_min, x_min, y_max, x_max]
           detected_scores: A float numpy array of shape [N, 1], representing
               the confidence scores of the detected N object instances.
-          detected_class_labels: A integer numpy array of shape [N, 1], repreneting
+          detected_class_labels: A integer numpy array of shape [N, 1], representing
               the class labels of the detected N object instances.
           groundtruth_boxes: A float numpy array of shape [M, 4], representing M
               regions of object instances in ground truth
@@ -86,9 +86,11 @@ class PerImageEvaluation(object):
               shape [C, 1], indicating whether the correponding class has a least
               one instance being correctly detected in the image
         """
+        # 1. Remove invalid detection bounding boxes
         detected_boxes, detected_scores, detected_class_labels = (
             self._remove_invalid_boxes(detected_boxes, detected_scores,
                                        detected_class_labels))
+        # 2. Computer TP and FP
         scores, tp_fp_labels = self._compute_tp_fp(
             detected_boxes, detected_scores, detected_class_labels,
             groundtruth_boxes, groundtruth_class_labels,

@@ -66,6 +66,7 @@ def main(_):
         input_tfrecord_paths = [
             v for v in FLAGS.input_tfrecord_paths.split(',') if v]
         tf.logging.info('Reading input from %d files', len(input_tfrecord_paths))
+        # Shape of image_tensor is: [1, None, None, 3]
         serialized_example_tensor, image_tensor = detection_inference.build_input(
             input_tfrecord_paths)
         tf.logging.info('Reading graph and building model...')
