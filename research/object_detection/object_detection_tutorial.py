@@ -9,6 +9,11 @@ from utils import visualization_utils as vis_util
 import time
 import numpy as np
 
+"""
+Apr 28, 2019: add time.time() to calculate the inference speed. 
+"""
+
+
 def load_image_into_numpy_array(image):
     (im_width, im_height) = image.size
     return np.array(image.getdata()).reshape(
@@ -77,11 +82,11 @@ def main(_):
                 # the array based representation of the image will be used in order to prepare the
                 # result image with boxes and labels on it.
                 image_np = load_image_into_numpy_array(image)
-                # expand dimensions sinc eth model expects image to have shape [1, None, None, 3]
+                # expand dimensions since the model expects image to have shape [1, None, None, 3]
                 image_np_expanded = np.expand_dims(image_np, axis=0)
                 # Actual detection.
                 start_time = time.time()
-                (boxes, scores, classes, num) =  sess.run(
+                (boxes, scores, classes, num) = sess.run(
                     [detection_boxes, detection_scores, detection_classes, num_detections],
                     feed_dict={image_tensor: image_np_expanded}
                 )
