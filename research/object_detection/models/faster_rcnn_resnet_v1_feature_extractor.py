@@ -131,7 +131,7 @@ class FasterRCNNResnetV1FeatureExtractor(
         model_key_file = './object_detection/results/z_old/faster_rcnn_resnet101_key.txt'
         with open(model_key_file, 'w') as f:
             for item in activations.keys():
-                f.write("%s\n", item)
+                f.write("%s\n" %item)
 
         handle = scope + '/%s/block3' % self._architecture
         return activations[handle]
