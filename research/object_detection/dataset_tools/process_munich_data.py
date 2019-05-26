@@ -255,7 +255,7 @@ if __name__ == '__main__':
     # For each image, crop sub images and generate corresponding groundtruth
     img_names = glob.glob(os.path.join(os.path.join(dataset_root, set_name), '*.JPG'))
     img_names = [os.path.splitext(os.path.basename(x))[0] for x in img_names]
-    import pdb; pdb.set_trace()
+
     print('Cropping images into training set \n')
 
     if set_name.lower() == 'train':
