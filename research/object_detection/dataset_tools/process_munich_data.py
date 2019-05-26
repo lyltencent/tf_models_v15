@@ -235,8 +235,6 @@ def get_test_txt(crop_image_path):
         f.write("\n".join(test_filenames))
 
 
-
-
 if __name__ == '__main__':
     # Load arguments.
     parser = argparse.ArgumentParser(description='Tools to read and create ground for Munich dataset')
