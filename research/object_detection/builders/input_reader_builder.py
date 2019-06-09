@@ -53,6 +53,8 @@ def build(input_reader_config):
         if not config.input_path:
             raise ValueError('At least one input path must be specified in '
                              '`input_reader_config`.')
+        # shuffle is True => the common_queue would be a RandomShuffleQueue otherwise
+        # shuffle is False =>  it would be a FIFOQueue.
         _, string_tensor = parallel_reader.parallel_read(
             config.input_path[:],  # Convert `RepeatedScalarContainer` to list.
             reader_class=tf.TFRecordReader,
