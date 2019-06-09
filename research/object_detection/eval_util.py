@@ -435,7 +435,7 @@ def repeated_checkpoint_run(tensor_dict,
                                                     batch_processor,
                                                     checkpoint_dirs,
                                                     variables_to_restore,
-                                                    None, num_batches,
+                                                    restore_fn, num_batches,
                                                     master, save_graph,
                                                     save_graph_dir)
 
