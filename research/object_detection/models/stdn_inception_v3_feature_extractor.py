@@ -221,6 +221,7 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
           feature_maps: a list of tensors where the ith tensor has shape
             [batch, height_i, width_i, depth_i]
         """
+        # Make sure that input is in correct format with rank 4.
         preprocessed_inputs.get_shape().assert_has_rank(4)
         shape_assert = tf.Assert(
             tf.logical_and(tf.greater_equal(tf.shape(preprocessed_inputs)[1], 33),
