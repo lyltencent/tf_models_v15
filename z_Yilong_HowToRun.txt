@@ -25,7 +25,10 @@ export PYTHONPATH=$PYTHONPATH:`pwd`/object_detection/
 export PYTHONPATH=$PYTHONPATH:/Documents/tf_slim_faster_rcnn/data/coco/PythonAPI/
 
 OR: Add all paths in a single command: 
+Lab nix03: 
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim:`pwd`/object_detection:/Documents/tf_slim_faster_rcnn/data/coco/PythonAPI/
+My Linux: 
+export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim:`pwd`/object_detection:/Documents/Code/cocoapi/PythonAPI/
 
 The final PYTHONPATH would be the following:
 root@d82a4925d881:/Documents/tf_models_v15/research# echo $PYTHONPATH
