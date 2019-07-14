@@ -6,6 +6,10 @@ Verified donwload on Personal MAC: Yilong Liang
 ######################################
 MISC commands: 
 Open pycharm: /usr/local/bin/charm
+cd /opt/pycharm-community-2019.1.3/bin
+./pycharm.sh
+
+
 Get the object detection running from tensorflow/models repo
 
 1. Install required libarries
