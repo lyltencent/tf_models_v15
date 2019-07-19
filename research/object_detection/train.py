@@ -42,7 +42,7 @@ Example usage:
 """
 
 """
-Last modified: Mar 4, 2019.
+Last modified: July 18, 2019.
 Verified donwload on Personal MAC: Yilong Liang
 """
 import cv2
