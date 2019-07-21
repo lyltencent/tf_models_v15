@@ -69,13 +69,14 @@ def create_input_queue(batch_size_per_clone, create_tensor_dict_fn,
                               in tensor_dict)
     include_keypoints = (fields.InputDataFields.groundtruth_keypoints
                          in tensor_dict)
+    # Preprocess the images before creating the batches.
     if data_augmentation_options:
         tensor_dict = preprocessor.preprocess(
             tensor_dict, data_augmentation_options,
             func_arg_map=preprocessor.get_default_func_arg_map(
                 include_instance_masks=include_instance_masks,
                 include_keypoints=include_keypoints))
-
+    # input_queue is the BatchQueue class, has the deque method to return a list of tensor dictionary
     input_queue = batcher.BatchQueue(
         tensor_dict,
         batch_size=batch_size_per_clone,
@@ -148,6 +149,8 @@ def _create_losses(input_queue, create_model_fn, train_config):
       train_config: a train_pb2.TrainConfig protobuf.
     """
     detection_model = create_model_fn()
+    # images: a list of tensor of images.
+    # groundtruth_boxes_list: a list of tensors of shape [num_boxes, 4]
     (images, _, groundtruth_boxes_list, groundtruth_classes_list,
      groundtruth_masks_list, groundtruth_keypoints_list) = get_inputs(
         input_queue,
@@ -227,6 +230,8 @@ def train(create_tensor_dict_fn, create_model_fn, train_config, master, task,
         model_fn = functools.partial(_create_losses,
                                      create_model_fn=create_model_fn,
                                      train_config=train_config)
+        # input_queue is the BatchQueue class, has the deque method to return a list of tensor dictionary
+        # clones: A list of namedtuples `Clone`.
         clones = model_deploy.create_clones(deploy_config, model_fn, [input_queue])
         first_clone_scope = clones[0].scope
 
@@ -248,6 +253,7 @@ def train(create_tensor_dict_fn, create_model_fn, train_config, master, task,
 
         # Create ops required to initialize the model from a given checkpoint.
         init_fn = None
+        # If fine_tune_checkpoint is specified in config, the initializer_fn restores the variables.
         if train_config.fine_tune_checkpoint:
             var_map = detection_model.restore_map(
                 from_detection_checkpoint=train_config.from_detection_checkpoint)
@@ -261,6 +267,7 @@ def train(create_tensor_dict_fn, create_model_fn, train_config, master, task,
 
             init_fn = initializer_fn
 
+        # Compute the total loss, which tends to be the train_tensor
         with tf.device(deploy_config.optimizer_device()):
             total_loss, grads_and_vars = model_deploy.optimize_clones(
                 clones, training_optimizer, regularization_losses=None)
