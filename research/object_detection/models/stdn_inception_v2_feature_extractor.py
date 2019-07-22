@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""STDN FeatureExtractor for InceptionV3 features."""
+"""STDN FeatureExtractor for InceptionV2 features."""
 import tensorflow as tf
 
 from object_detection.meta_architectures import stdn_meta_arch
@@ -33,7 +33,7 @@ def combine_and_scale_transfer_module_v1(features):
     #  14 x 14 x 576
     end_point = 'Mixed_4e'
     features_4e = features[end_point]
-    tmp = slim.max_pool2d(features_3c, [3, 3], scope='MaxPool_0a_3x3')
+    tmp = slim.max_pool2d(features_3c, [2, 2], scope='MaxPool_0a_3x3')
     # features_4e_and_3c => 14 x 14 x (320+576) = 14 x 14 x 896
     features_4e_and_3c = tf.concat(axis=3, values=[features_4e, tmp])
 
@@ -43,7 +43,7 @@ def combine_and_scale_transfer_module_v1(features):
     feature2 = features['Mixed_5b']
     # 7 x 7 x 1024
     feature3 = features['Mixed_5c']
-    tmp = slim.max_pool2d(features_4e_and_3c, [3, 3], scope='MaxPool_0a_3x3')
+    tmp = slim.max_pool2d(features_4e_and_3c, [2, 2], scope='MaxPool_0a_3x3')
     # features_combine_all => 7 x 7 x (1024+896) = 7 x 7 x 1920
     features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
 
@@ -128,7 +128,7 @@ class STDNInceptionV2FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
 
         with tf.control_dependencies([shape_assert]):
             with slim.arg_scope(self._conv_hyperparams):
-                with tf.variable_scope('InceptionV3',
+                with tf.variable_scope('InceptionV2',
                                        reuse=self._reuse_weights) as scope:
                     _, image_features = inception_v2.inception_v2_base(
                         ops.pad_to_multiple(preprocessed_inputs, self._pad_to_multiple),
