@@ -95,6 +95,7 @@ def inception_v2_base(inputs,
 
             # Note that sizes in the comments below assume an input spatial size of
             # 224x224, however, the inputs can be of any size greater 32x32.
+            # inputs: 224 x 224 x 3
 
             # 224 x 224 x 3
             end_point = 'Conv2d_1a_7x7'
@@ -126,27 +127,32 @@ def inception_v2_base(inputs,
             end_points[end_point] = net
             if end_point == final_endpoint: return net, end_points
             # 112 x 112 x 64
+
             end_point = 'MaxPool_2a_3x3'
             net = slim.max_pool2d(net, [3, 3], scope=end_point, stride=2)
             end_points[end_point] = net
             if end_point == final_endpoint: return net, end_points
             # 56 x 56 x 64
+
             end_point = 'Conv2d_2b_1x1'
             net = slim.conv2d(net, depth(64), [1, 1], scope=end_point,
                               weights_initializer=trunc_normal(0.1))
             end_points[end_point] = net
             if end_point == final_endpoint: return net, end_points
             # 56 x 56 x 64
+
             end_point = 'Conv2d_2c_3x3'
             net = slim.conv2d(net, depth(192), [3, 3], scope=end_point)
             end_points[end_point] = net
             if end_point == final_endpoint: return net, end_points
             # 56 x 56 x 192
+
             end_point = 'MaxPool_3a_3x3'
             net = slim.max_pool2d(net, [3, 3], scope=end_point, stride=2)
             end_points[end_point] = net
             if end_point == final_endpoint: return net, end_points
             # 28 x 28 x 192
+
             # Inception module.
             end_point = 'Mixed_3b'
             with tf.variable_scope(end_point):
@@ -179,6 +185,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 28 x 28 x 256
+
             end_point = 'Mixed_3c'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -210,6 +217,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 28 x 28 x 320
+
             end_point = 'Mixed_4a'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -235,6 +243,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 14 x 14 x 576
+
             end_point = 'Mixed_4b'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -266,6 +275,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 14 x 14 x 576
+
             end_point = 'Mixed_4c'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -297,6 +307,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 14 x 14 x 576
+
             end_point = 'Mixed_4d'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -328,6 +339,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 14 x 14 x 576
+
             end_point = 'Mixed_4e'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -359,6 +371,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 14 x 14 x 576
+
             end_point = 'Mixed_5a'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -385,6 +398,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 7 x 7 x 1024
+
             end_point = 'Mixed_5b'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -416,6 +430,7 @@ def inception_v2_base(inputs,
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
             # 7 x 7 x 1024
+
             end_point = 'Mixed_5c'
             with tf.variable_scope(end_point):
                 with tf.variable_scope('Branch_0'):
@@ -446,6 +461,8 @@ def inception_v2_base(inputs,
                     axis=concat_dim, values=[branch_0, branch_1, branch_2, branch_3])
                 end_points[end_point] = net
                 if end_point == final_endpoint: return net, end_points
+            # 7 x 7 x 1024
+
         raise ValueError('Unknown final endpoint %s' % final_endpoint)
 
 

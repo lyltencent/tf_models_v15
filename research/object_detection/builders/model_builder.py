@@ -39,7 +39,7 @@ from object_detection.protos import model_pb2
 
 from object_detection.meta_architectures import stdn_meta_arch
 from object_detection.models.stdn_inception_v3_feature_extractor import STDNInceptionV3FeatureExtractor
-
+from object_detection.models.stdn_inception_v2_feature_extractor import STDNInceptionV2FeatureExtractor
 
 # A map of names to SSD feature extractors.
 SSD_FEATURE_EXTRACTOR_CLASS_MAP = {
@@ -50,7 +50,8 @@ SSD_FEATURE_EXTRACTOR_CLASS_MAP = {
 }
 
 STDN_FEATURE_EXTRACTOR_CLASS_MAP = {
-    'stdn_inception_v3': STDNInceptionV3FeatureExtractor
+    'stdn_inception_v2': STDNInceptionV2FeatureExtractor,
+    'stdn_inception_v3': STDNInceptionV3FeatureExtractor,
 }
 
 # A map of names to Faster R-CNN feature extractors.
