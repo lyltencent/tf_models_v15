@@ -34,6 +34,7 @@ def combine_and_scale_transfer_module_v1(features):
     end_point = 'Mixed_4e'
     features_4e = features[end_point]
     tmp = slim.max_pool2d(features_3c, [3, 3], scope='MaxPool_0a_3x3')
+    # features_4e_and_3c => 14 x 14 x (320+576) = 14 x 14 x 896
     features_4e_and_3c = tf.concat(axis=3, values=[features_4e, tmp])
 
     # 7 x 7 x 1024
@@ -43,20 +44,21 @@ def combine_and_scale_transfer_module_v1(features):
     # 7 x 7 x 1024
     feature3 = features['Mixed_5c']
     tmp = slim.max_pool2d(features_4e_and_3c, [3, 3], scope='MaxPool_0a_3x3')
+    # features_combine_all => 7 x 7 x (1024+896) = 7 x 7 x 1920
     features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
 
-    #  28 x 28 x 320
-    output_features['Mixed_3c'] = features_3c
-    #  14 x 14 x 576
-    output_features['Mixed_4e_3c'] = features_4e_and_3c
-    # 7 x 7 x 1024
+    #  1 x 1 x 320
+    output_features['Mixed_3c'] = slim.avg_pool2d(features_3c, [28, 28], scope='AvgPool')
+    #  3 x 3 x 896
+    output_features['Mixed_4e_3c_pool'] = slim.avg_pool2d(features_4e_and_3c, [4, 4], scope='AvgPool_0a_4x4')
+    # 7 x 7 x 1920
     output_features['Mixed_5c_4e_3c'] = features_combine_all
-
-    output_features['Mixed_5b_upscale'] = tf.depth_to_space(feature2, 2)
-    output_features['Mixed_5c_upscale'] = tf.depth_to_space(feature3, 4)
-
+    # 14 x 14
+    output_features['Mixed_4e_3c'] = features_4e_and_3c
+    # 28 x 28
+    output_features['Mixed_5c_4e_3c_upscale'] = tf.depth_to_space(features_combine_all, 4)
     # Also add the original spatial resolution.
-    output_features['Mixed_5a'] = feature1
+    output_features['Mixed_5c'] = feature3
 
     return output_features
 
