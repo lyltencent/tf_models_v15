@@ -32,7 +32,7 @@ slim = tf.contrib.slim
 def inception_arg_scope(weight_decay=0.00004,
                         use_batch_norm=True,
                         batch_norm_decay=0.9997,
-                        batch_norm_epsilon=0.00001,
+                        batch_norm_epsilon=0.000000001,
                         activation_fn=tf.nn.relu):
     """Defines the default arg scope for inception models.
   
