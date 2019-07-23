@@ -5,9 +5,17 @@ Verified donwload on Personal MAC: Yilong Liang
 
 ######################################
 MISC commands: 
-Open pycharm: /usr/local/bin/charm
+1.  Open pycharm: /usr/local/bin/charm
 cd /opt/pycharm-community-2019.1.3/bin
 ./pycharm.sh
+
+2.Resolve docker error: Error response from daemon: Unknown runtime specified nvidia.
+Need to restart demon in ubuntu: 
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+3. Start the docker: 
+sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tf_15:latest
 
 ######################################
 How to get the object detection running from tensorflow/models repo
