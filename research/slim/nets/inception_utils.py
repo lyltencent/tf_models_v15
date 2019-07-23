@@ -55,8 +55,7 @@ def inception_arg_scope(weight_decay=0.00004,
         # collection containing update_ops.
         'updates_collections': tf.GraphKeys.UPDATE_OPS,
         # use fused batch norm if possible.
-        # Yilong: For tensorflow 1.5, set default to False
-        'fused': False,
+        'fused': None,
     }
     if use_batch_norm:
         normalizer_fn = slim.batch_norm
