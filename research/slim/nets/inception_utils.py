@@ -32,7 +32,7 @@ slim = tf.contrib.slim
 def inception_arg_scope(weight_decay=0.00004,
                         use_batch_norm=True,
                         batch_norm_decay=0.9997,
-                        batch_norm_epsilon=0.01,
+                        batch_norm_epsilon=0.001,
                         activation_fn=tf.nn.relu):
     """Defines the default arg scope for inception models.
   
@@ -51,13 +51,12 @@ def inception_arg_scope(weight_decay=0.00004,
         # Decay for the moving averages.
         'decay': batch_norm_decay,
         # epsilon to prevent 0s in variance.
-        # Yilong: Change the batch_norm_epsilon default value from 0.001 to 0.01
         'epsilon': batch_norm_epsilon,
         # collection containing update_ops.
         'updates_collections': tf.GraphKeys.UPDATE_OPS,
         # use fused batch norm if possible.
         # Yilong: For tensorflow 1.5, set default to False
-        'fused': None,
+        'fused': False,
     }
     if use_batch_norm:
         normalizer_fn = slim.batch_norm
