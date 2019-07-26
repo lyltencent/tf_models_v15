@@ -91,7 +91,7 @@ python -m object_detection/inference/infer_detections --input_tfrecord_paths=/Do
 SSD: 
 python -m object_detection/inference/infer_detections --input_tfrecord_paths=/Documents/tf_models_v15/research/images_tfrecord/munich_test.record --output_tfrecord_path=./images_tfrecord/munich_test_ssd_detections.tfrecord-0000-of-0001 --inference_graph=./object_detection/0_train_dir/munich_train_ssd/exported_graph/frozen_inference_graph.pb --discard_image_pixels
 
-2. Compute the detection result statistics :
+****************************** Compute the inference result statistics :******************************:
 # Faster-RCNN: 
 python object_detection/metrics/offline_eval_map_corloc.py --eval_dir=./images_metrics/ --eval_config_path=./images_metrics/munich_test_detections_eval_config.pbtxt --input_config_path=./images_metrics/munich_test_detections_input_config.pbtxt
 
