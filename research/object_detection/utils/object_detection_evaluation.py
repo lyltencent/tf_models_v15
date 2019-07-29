@@ -528,6 +528,9 @@ class ObjectDetectionEvaluation(object):
             groundtruth_class_labels = np.array([], dtype=int)
             groundtruth_is_difficult_list = np.array([], dtype=bool)
             groundtruth_is_group_of_list = np.array([], dtype=bool)
+        # is_class_correctly_detected_in_image: a numpy integer array of
+        # shape [C, 1], indicating whether the correponding class has a least
+        # one instance being correctly detected in the image
         scores, tp_fp_labels, is_class_correctly_detected_in_image = (
             self.per_image_eval.compute_object_detection_metrics(
                 detected_boxes, detected_scores, detected_class_labels,
