@@ -132,6 +132,7 @@ class FasterRCNNInceptionV3FeatureExtractor(
                         final_endpoint='Mixed_7c',
                         min_depth=self._min_depth,
                         depth_multiplier=self._depth_multiplier,
+                        scope=scope)
 
         return activations['Mixed_7c']
 
