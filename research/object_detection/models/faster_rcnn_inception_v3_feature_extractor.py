@@ -134,7 +134,7 @@ class FasterRCNNInceptionV3FeatureExtractor(
                         depth_multiplier=self._depth_multiplier,
                         scope=scope)
 
-        return activations['Mixed_7c']
+        return activations['Mixed_6e']
 
     def _extract_box_classifier_features(self, proposal_feature_maps, scope):
         """Extracts second stage box classifier features.
