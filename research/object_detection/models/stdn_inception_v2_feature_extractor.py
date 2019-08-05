@@ -135,6 +135,7 @@ class STDNInceptionV2FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                         final_endpoint='Mixed_5c',
                         min_depth=self._min_depth,
                         depth_multiplier=self._depth_multiplier,
+                        use_separable_conv=False,
                         scope=scope)
 
                     # 2. STDN version + combine mode
