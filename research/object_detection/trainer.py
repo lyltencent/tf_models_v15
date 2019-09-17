@@ -20,7 +20,7 @@ DetectionModel.
 """
 
 import functools
-
+import pdb
 import tensorflow as tf
 
 from object_detection.builders import optimizer_builder
