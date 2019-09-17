@@ -33,7 +33,7 @@ def rename(checkpoint_dir, replace_from, replace_to, add_prefix, dry_run):
             saver = tf.train.Saver()
             sess.run(tf.global_variables_initializer())
             # saver.save(sess, checkpoint.model_checkpoint_path)
-            saver.save(sess, '/Users/Forbest/Documents/Object_Detection/Code/tf_models_v15/research/object_detection/models_pretrain/tf-densenet169_prefix/tf-densenet169.ckpt')
+            saver.save(sess, './object_detection/models_pretrain/tf-densenet169_prefix/tf-densenet169.ckpt')
 
 
 def main(argv):
