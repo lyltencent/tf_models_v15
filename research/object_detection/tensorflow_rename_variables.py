@@ -27,7 +27,6 @@ def rename(checkpoint_dir, replace_from, replace_to, add_prefix, dry_run):
                 print('Renaming %s to %s.' % (var_name, new_name))
                 # Rename the variable
                 var = tf.Variable(var, name=new_name)
-        import pdb; pdb.set_trace()
         if not dry_run:
             # Save the variables
             saver = tf.train.Saver()

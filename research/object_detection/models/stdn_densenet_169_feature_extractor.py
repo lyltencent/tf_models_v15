@@ -4,13 +4,11 @@ from object_detection.meta_architectures import stdn_meta_arch
 from object_detection.models import feature_map_generators
 from object_detection.utils import ops
 from nets import densenet
-import pdb
 slim = tf.contrib.slim
 
 
 def scale_transfer_module_densent_169(image_features):
     output_features = {}
-    pdb.set_trace()
     feature1 = image_features['FeatureExtractor/densenet169/densenet169/dense_block4/conv_block5']
     feature2 = image_features['FeatureExtractor/densenet169/densenet169/dense_block4/conv_block10']
     feature3 = image_features['FeatureExtractor/densenet169/densenet169/dense_block4/conv_block15']
@@ -102,6 +100,5 @@ class STDNDenseNet169FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                         reuse=None)
                     # Insert scale transfer module
                     image_features = scale_transfer_module_densent_169(image_features)
-                    pdb.set_trace()
         # return a list of feature maps
         return image_features.values()
