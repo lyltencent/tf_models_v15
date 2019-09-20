@@ -90,20 +90,16 @@ class STDNDenseNet169FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
 
         with tf.control_dependencies([shape_assert]):
             with slim.arg_scope(self._conv_hyperparams):
-                # with tf.variable_scope('densenet169',
-                #                        reuse=self._reuse_weights) as scope:
-                _, image_features = densenet.densenet169(
-                        preprocessed_inputs,
-                        num_classes=1000,
-                        data_format='NHWC',
-                        is_training=True,
-                        reuse=self._reuse_weights)
+                with tf.variable_scope('densenet169',
+                                       reuse=self._reuse_weights) as scope:
+                    _, image_features = densenet.densenet169(
+                            preprocessed_inputs,
+                            num_classes=1000,
+                            data_format='NHWC',
+                            is_training=True,
+                            reuse=self._reuse_weights)
                 # Insert scale transfer module
                 image_features = scale_transfer_module_densent_169(image_features)
-
-
-
-
 
         # return a list of feature maps
         return image_features.values()
