@@ -58,7 +58,7 @@ def scale_transfer_module(features):
     return output_features
 
 
-def combine_and_scale_transfer_module_v1(features):
+def combine_and_scale_transfer_module_v1(features, combine_mode=1):
     output_features = {}
     #  35 x 35 x 288.
     end_point = 'Mixed_5d'
@@ -76,8 +76,11 @@ def combine_and_scale_transfer_module_v1(features):
     feature2 = features['Mixed_7b']
     # 8 x 8 x 2048
     feature3 = features['Mixed_7c']
-    tmp = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
-    features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
+    if combine_mode:
+        tmp = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
+        features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
+    else:
+        features_combine_all = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
 
     #  35 x 35 x 288.
     output_features['Mixed_5d'] = features_5d
@@ -248,7 +251,7 @@ class STDNInceptionV3FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                     # 1. STDN_vesion_1
                     # image_features = scale_transfer_module(image_features)
                     # 2. STDN version + combine mode
-                    image_features = combine_and_scale_transfer_module_v1(image_features)
+                    image_features = combine_and_scale_transfer_module_v1(image_features, combine_mode=0)
                     # 3. STDN vesion2: result is worse than (2)
                     # image_features = scale_transfer_module_v2(image_features)
                     # 4. STDN combine_tansfer_v2
