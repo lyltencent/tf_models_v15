@@ -10,6 +10,12 @@ from google.protobuf import text_format
 
 
 def draw_tfrecord(tfrecords_filename, label_map=None):
+    """
+    Draw the image and bounding box indicated in the groundtruth tf record file.
+    :param tfrecords_filename:
+    :param label_map:
+    :return:
+    """
 
     if label_map is not None:
         label_map_proto = pb.StringIntLabelMap()
@@ -27,6 +33,7 @@ def draw_tfrecord(tfrecords_filename, label_map=None):
         print("This is the {} example".format(iter_num))
         example = decoder.decode(record)
         host_example = sess.run(example)
+        # Set the score of the groundth truth bounding box as 1
         scores = np.ones(host_example['groundtruth_boxes'].shape[0])
         vu.visualize_boxes_and_labels_on_image_array(
             host_example['image'],
