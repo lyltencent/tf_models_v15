@@ -1,83 +1,48 @@
-
-import functools
-import os
+# This utility aims at visualizint the image and bouding boxes in the tfrecord files.
+# Based
+import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
-import glob
-from object_detection.data_decoders import tf_example_decoder
-from object_detection.core import prefetcher
-from object_detection.core import standard_fields as fields
-from object_detection.utils import dataset_util
-
-parallel_reader = tf.contrib.slim.parallel_reader
-
-tf.logging.set_verbosity(tf.logging.INFO)
-
-flags = tf.app.flags
-
-flags.DEFINE_string('record_file_path', '',
-                    'Direcotory of the record file')
-flags.DEFINE_string('vis_dir', '',
-                    'Directory to write the images to')
-flags.DEFINE_string('label_map_path', '',
-                    'Direcotry of label map file')
-
-FLAGS = flags.FLAGS
+from object_detection.utils import visualization_utils as vu
+from object_detection.protos import string_int_label_map_pb2 as pb
+from object_detection.data_decoders.tf_example_decoder import TfExampleDecoder as TfDecoder
+from google.protobuf import text_format
 
 
-def main(unused_argv):
-    assert FLAGS.record_file_path, '`record_file_path` is missing.'
-    assert FLAGS.vis_dir, '`vis_dir` is missing.'
-    tf.gfile.MakeDirs(FLAGS.vis_dir)
-    filename = glob.glob(FLAGS.record_file_path)
-    reader = tf.TFRecordReader()
+def draw_tfrecord(tfrecords_filename, label_map=None):
 
-    filename_queue = tf.train.string_input_producer(filename)
-    _, serialized_example = reader.read(filename_queue)
-    feature_set = {
-        'image/height': tf.train.Int64List(),
-        'image/width': tf.train.Int64List(),
-        # 'image/filename': tf.train.BytesList(),
-        'image/source_id': tf.train.BytesList(),
-        'image/key/sha256': tf.train.BytesList(),
-        # 'image/encoded': tf.train.BytesList(),
-        # 'image/format': tf.train.BytesList(),
-        'image/object/bbox/xmin': tf.train.FloatList(),
-        'image/object/bbox/xmax': tf.train.FloatList(),
-        'image/object/bbox/ymin': tf.train.FloatList(),
-        'image/object/bbox/ymax': tf.train.FloatList(),
-        # 'image/object/class/text': tf.train.BytesList(),
-        'image/object/class/label': tf.train.Int64List(),
-        'image/object/difficult': tf.train.Int64List(),
-        'image/object/truncated': tf.train.Int64List(),
-        # 'image/object/view': tf.train.BytesList(),
-    }
-    import pdb; pdb.set_trace()
-    features = tf.parse_single_example(serialized_example, features=feature_set)
+    if label_map is not None:
+        label_map_proto = pb.StringIntLabelMap()
+        with tf.gfile.GFile(label_map,'r') as f:
+            text_format.Merge(f.read(), label_map_proto)
+            class_dict = {}
+            for entry in label_map_proto.item:
+                class_dict[entry.id] = {'name':entry.display_name}
+    sess = tf.Session()
+    decoder = TfDecoder(label_map_proto_file=label_map, use_display_name=False)
+    sess.run(tf.tables_initializer())
+    iter_num = 0
+    for record in tf.python_io.tf_record_iterator(tfrecords_filename):
+        iter_num += 1
+        print("This is the {} example".format(iter_num))
+        example = decoder.decode(record)
+        host_example = sess.run(example)
+        scores = np.ones(host_example['groundtruth_boxes'].shape[0])
+        vu.visualize_boxes_and_labels_on_image_array(
+            host_example['image'],
+            host_example['groundtruth_boxes'],
+            host_example['groundtruth_classes'],
+            scores,
+            class_dict,
+            max_boxes_to_draw=None,
+            use_normalized_coordinates=True)
+        plt.imshow(host_example['image'])
+        plt.show(block=False)
+        plt.pause(.1)
+        plt.close("all")
+
+tfrecords_filename = './object_detection/results/data_tfrecord/munich_vehicle_train.record'
+label_map = './object_detection/data/munich_vehicle_label_map.pbtxt'
+draw_tfrecord(tfrecords_filename, label_map=label_map)
 
 
-    # groundtruth = None
-    # if not ignore_groundtruth:
-    #     groundtruth = {
-    #         fields.InputDataFields.groundtruth_boxes:
-    #             input_dict[fields.InputDataFields.groundtruth_boxes],
-    #         fields.InputDataFields.groundtruth_classes:
-    #             input_dict[fields.InputDataFields.groundtruth_classes],
-    #         fields.InputDataFields.groundtruth_area:
-    #             input_dict[fields.InputDataFields.groundtruth_area],
-    #         fields.InputDataFields.groundtruth_is_crowd:
-    #             input_dict[fields.InputDataFields.groundtruth_is_crowd],
-    #         fields.InputDataFields.groundtruth_difficult:
-    #             input_dict[fields.InputDataFields.groundtruth_difficult]
-    #     }
-    #     if fields.InputDataFields.groundtruth_group_of in input_dict:
-    #         groundtruth[fields.InputDataFields.groundtruth_group_of] = (
-    #             input_dict[fields.InputDataFields.groundtruth_group_of])
-    #
-    # sess = tf.Session()
-    # sess.run(tf.global_variables_initializer())
-    # sess.run(tf.local_variables_initializer())
-    # input_dict = sess.run(input_dict)
-    # sess.close()
-
-if __name__ == '__main__':
-    tf.app.run()
