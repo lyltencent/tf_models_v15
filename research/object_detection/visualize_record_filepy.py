@@ -1,5 +1,5 @@
-# This utility aims at visualizint the image and bouding boxes in the tfrecord files.
-# Based
+# This utility aims at visualize the image and bounding boxes in the tfrecord files.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -41,8 +41,9 @@ def draw_tfrecord(tfrecords_filename, label_map=None):
         plt.pause(.1)
         plt.close("all")
 
-tfrecords_filename = './object_detection/results/data_tfrecord/munich_vehicle_train.record'
+
+tfrecord_path = './object_detection/results/data_tfrecord/munich_vehicle_train.record'
 label_map = './object_detection/data/munich_vehicle_label_map.pbtxt'
-draw_tfrecord(tfrecords_filename, label_map=label_map)
+draw_tfrecord(tfrecord_path, label_map=label_map)
 
 
