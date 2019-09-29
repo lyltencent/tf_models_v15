@@ -77,6 +77,7 @@ def combine_and_scale_transfer_module_v1(features, combine_mode=1):
     feature2 = features['Mixed_7b']
     # 8 x 8 x 2048
     feature3 = features['Mixed_7c']
+
     # 1st feature map:
     #  35 x 35 x 288.
     output_features['Mixed_5d'] = features_5d

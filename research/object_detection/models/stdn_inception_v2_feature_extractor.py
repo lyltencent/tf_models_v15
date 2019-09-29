@@ -24,7 +24,7 @@ from nets import inception_v2
 slim = tf.contrib.slim
 
 
-def combine_and_scale_transfer_module_v1(features):
+def combine_and_scale_transfer_module_v1(features, combine_mode=1):
     output_features = {}
     #  28 x 28 x 320
     end_point = 'Mixed_3c'
@@ -47,18 +47,29 @@ def combine_and_scale_transfer_module_v1(features):
     # features_combine_all => 7 x 7 x (1024+896) = 7 x 7 x 1920
     features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
 
-    #  1 x 1 x 320
-    output_features['Mixed_3c'] = slim.avg_pool2d(features_3c, [28, 28], scope='AvgPool')
-    #  3 x 3 x 896
-    output_features['Mixed_4e_3c_pool'] = slim.avg_pool2d(features_4e_and_3c, [4, 4], scope='AvgPool_0a_4x4')
-    # 7 x 7 x 1920
-    output_features['Mixed_5c_4e_3c'] = features_combine_all
-    # 14 x 14
-    output_features['Mixed_4e_3c'] = features_4e_and_3c
-    # 28 x 28
-    output_features['Mixed_5c_4e_3c_upscale'] = tf.depth_to_space(features_combine_all, 4)
-    # Also add the original spatial resolution.
-    output_features['Mixed_5c'] = feature3
+    if combine_mode:
+        #  1 x 1 x 320
+        output_features['Mixed_3c'] = slim.avg_pool2d(features_3c, [28, 28], scope='AvgPool')
+        #  3 x 3 x 896
+        output_features['Mixed_4e_3c_pool'] = slim.avg_pool2d(features_4e_and_3c, [4, 4], scope='AvgPool_0a_4x4')
+        # 7 x 7 x 1920
+        output_features['Mixed_5c_4e_3c'] = features_combine_all
+        # 14 x 14
+        output_features['Mixed_4e_3c'] = features_4e_and_3c
+        # 28 x 28
+        output_features['Mixed_5c_4e_3c_upscale'] = tf.depth_to_space(features_combine_all, 4)
+        # Also add the original spatial resolution.
+        output_features['Mixed_5c'] = feature3
+    else:
+        # 1st feature map:
+        output_features['Mixed_3c'] = features_3c
+        output_features['Mixed_4e'] = features_4e
+        output_features['Mixed_3c_4e'] = slim.max_pool2d(features_4e_and_3c, [2, 2], scope='MaxPool_0a_3x3')
+        output_features['Mixed_5b_upscale'] = tf.depth_to_space(feature2, 2)
+        output_features['Mixed_5c_upscale'] = tf.depth_to_space(feature3, 4)
+
+        # Also add the original spatial resolution.
+        output_features['Mixed_5a'] = feature1
 
     return output_features
 
@@ -139,7 +150,7 @@ class STDNInceptionV2FeatureExtractor(stdn_meta_arch.STDNFeatureExtractor):
                         scope=scope)
 
                     # 2. STDN version + combine mode
-                    image_features = combine_and_scale_transfer_module_v1(image_features)
+                    image_features = combine_and_scale_transfer_module_v1(image_features, combine_mode=0)
 
         # return a list of feature maps
         return image_features.values()
