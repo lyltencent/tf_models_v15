@@ -68,6 +68,7 @@ def combine_and_scale_transfer_module_v1(features, combine_mode=1):
     end_point = 'Mixed_6e'
     features_6e = features[end_point]
     tmp = slim.max_pool2d(features_5d, [3, 3], scope='MaxPool_0a_3x3')
+    # Combine 6e and 5d to simulate "DenseNet"
     features_6e_and_5d = tf.concat(axis=3, values=[features_6e, tmp])
 
     # 8 x 8 x 1280
@@ -76,19 +77,27 @@ def combine_and_scale_transfer_module_v1(features, combine_mode=1):
     feature2 = features['Mixed_7b']
     # 8 x 8 x 2048
     feature3 = features['Mixed_7c']
-    if combine_mode:
-        tmp = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
-        features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
-    else:
-        features_combine_all = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
-
+    # 1st feature map:
     #  35 x 35 x 288.
     output_features['Mixed_5d'] = features_5d
-    #  17 x 17 x 768
-    output_features['Mixed_6e_5d'] = features_6e_and_5d
-    # 8 x 8 x 2048
-    output_features['Mixed_7c_6e_5d'] = features_combine_all
 
+    # 2nd and 3rd feature map
+    if combine_mode:
+        tmp = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
+        # Combines 5d, 6e and 7c
+        features_combine_all = tf.concat(axis=3, values=[feature3, tmp])
+        #  17 x 17 x 768
+        output_features['Mixed_6e_5d'] = features_6e_and_5d
+        # 8 x 8 x 2048
+        output_features['Mixed_7c_6e_5d'] = features_combine_all
+    else:
+        output_features['Mixed_6e'] = features_6e
+        # Only combine 5d and 6e
+        features_combine_all = slim.max_pool2d(features_6e_and_5d, [3, 3], scope='MaxPool_0a_3x3')
+        # 8 x 8 x 2048
+        output_features['Mixed_7c_6e_5d'] = features_combine_all
+
+    # 4th, 5th, and 6th feature maps
     # output_features['Mixed_7a_upscale'] = feature1_tr
     output_features['Mixed_7b_upscale'] = tf.depth_to_space(feature2, 2)
     output_features['Mixed_7c_upscale'] = tf.depth_to_space(feature3, 4)
