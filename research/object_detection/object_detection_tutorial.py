@@ -61,11 +61,12 @@ def main(_):
     category_index = label_map_util.create_category_index(categories)
     # Step 3: Get the list of image names
     TEST_IMAGE_PATHS = glob.glob(os.path.join(PATH_TO_TEST_IMAGES_DIR, '*.jpg'))
-    # TEST_IMAGE_PATHS = [os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image_{}.jpg'.format(i)) for i in range(1, 11)]
+
     # Size, in inches, of the output images.
     IMAGE_SIZE = (12, 8)
     if not os.path.exists(RESULT_VIS_PATH):
         os.makedirs(RESULT_VIS_PATH)
+    # Record inference time of each frame
     inferece_time = []
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
