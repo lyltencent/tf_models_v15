@@ -1,0 +1,99 @@
+mlsystem@mlsystem-System-Product-Name:~$ history
+    1  sudo apt-get update
+    2  sudo apt-get upgrade
+    3  sudo apt-get update
+    4  sudo apt-get upgrade
+    5  sudo reboot
+    6  sudo apt-get update
+    7  sudo apt-get upgrade
+    8  sudo apt-get update
+    9  sudo apt-get upgrade
+   10  sensors
+   11  sudo apt-get install lm-sensors
+   12  sensors
+   13  watch  -n.1 nvidia-smi
+   14  sudo poweroff
+   15  pwd
+   16  ls
+   17  cd Downloads/
+   18  ls
+   19  cd Geekbench-4.3.4-Linux/
+   20  ls -lrt
+   21  ./geekbench4
+   22  sensors
+   23  cd
+   24  ls -lrt
+   25  sudo apt-get update
+   26  sudo apt-get upgrade
+   27  sudo apt-get install     apt-transport-https     ca-certificates     curl     gnupg-agent     software-properties-common
+   28  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+   29  sudo apt-key fingerprint 0EBFCD88
+   30  sudo apt-get install docker-ce docker-ce-cli containerd.io
+   31  curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey |   sudo apt-key add -
+   32  distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+   33  curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list |   sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+   34  sudo apt-get update
+   35  sudo apt-get install -y nvidia-docker2
+   36  sudo pkill -SIGHUP dockerd
+   37  ls -lrt
+   38  sudo apt-get update
+   39  sudo apt-get upgrade
+   41  ls -l
+   42  cd Downloads/
+   43  ls -lrt
+   44  sudo sh cuda_10.1.168_418.67_linux.run
+   45  cat /var/log/cuda-installer.log
+   46  sudo sh cuda_10.1.168_418.67_linux.run
+   47  sudo reboot
+   48  cd Downloads/
+   49  ls
+   50  sudo sh cuda_10.1.168_418.67_linux.run
+   51  sudo reboot
+   52  sudo apt-get update
+   53  sudo apt-get upgrade
+   54  nvidia-smi
+   55  docker pull tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter
+   56  sudo docker pull tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter
+   57  sudo docker run -it --rm            --runtime=nvidia            -v $(realpath ~/eg_notebook):/tf/notebooks            -p 8888:8888            tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter
+   58  sudo docker run -it --rm                 --runtime=nvidia                 -v $(realpath ~/eg_notebook):/tf/notebooks                 -p 8888:8888                 -u $(id -u):$(id -g)
+   59  sudo docker run -it --rm                 --runtime=nvidia                 -v $(realpath ~/eg_notebook):/tf/notebooks                 -p 8888:8888                 -u $(id -u):$(id -g)                 tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter /bin/bash
+   60  exit
+   61  watch -n.1 nvidia-smi
+   62  sudo apt-get update
+   63  sudo apt-get upgrade
+   64  sudo reboot
+   65  sudo apt-get update
+   66  sudo apt-get upgrade
+   67  sudo apt autoremove
+   68  sudo reboot
+   69  nvidia-settings
+   70  nvidia-smi
+   71  sudo docker images
+   72  sudo docker run -it --rm                 --runtime=nvidia                 -p 8888:8888                 -u $(id -u):$(id -g)                 tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter
+   73  watch -n.1 nvidia-smi
+   74  sudo docker ps -aq
+   75  sudo reboot
+   76  htop
+   77  sudo apt-get install htop
+   78  htop
+   79  sudo poweroff
+   80  watch -n.1 nvidia-smi
+   81  sudo docker run -it --rm                 --runtime=nvidia                 -p 8888:8888                 -u $(id -u):$(id -g)                 tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter
+   82  sudo docker images
+   83  sudo poweroff
+   84  history
+
+
+
+Install Nvidia- driver: 
+  966  sudo apt-get update
+  967  sudo apt-get upgrade
+  970  sudo add-apt-repository ppa:graphics-drivers/ppa
+  971  sudo apt-get update 
+  972  sudo apt install nvidia-driver-415
+  970  sudo add-apt-repository ppa:graphics-drivers/ppa
+  971  sudo apt-get update 
+  972  sudo apt install nvidia-driver-415
+
+
+
