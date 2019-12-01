@@ -17,6 +17,10 @@ sudo systemctl restart docker
 3. Start the docker: 
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tf_15:latest
 
+My Pytorch:  
+sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop pytorch:latest
+
+Experimental Docker: 
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter /bin/bash
 
 ######################################
