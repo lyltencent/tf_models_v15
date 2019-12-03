@@ -19,6 +19,8 @@ sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):
 
 My Pytorch:  
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop pytorch:latest
+(with root access): 
+sudo docker run -u 0 -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006  -v ~/Documents:/Documents -v ~/Desktop:/Desktop pytorch:latest /bin/bash
 
 Experimental Docker: 
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter /bin/bash
