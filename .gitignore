@@ -93,5 +93,5 @@ ENV/
 .idea/
 
 # Folders
-research/object_detection/test_images_results/
-research/object_detection/test_images/
+research/object_detection/test_images_results/*
+research/object_detection/test_images/*
