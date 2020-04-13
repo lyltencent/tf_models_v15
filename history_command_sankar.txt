@@ -96,4 +96,19 @@ Install Nvidia- driver:
   972  sudo apt install nvidia-driver-415
 
 
+# Yilong COmmand: Update driver: 
+sudo apt-get update
+ sudo apt-get upgrade
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt install nvidia-driver-440
+"Don't foget to restart system"
+
+# After updating the driver, to make the old docker image work: 
+I had to restart the nvidia-docker service after upgrading the nvidia driver.
+See your results from
+service nvidia-docker status
+
+If that doesn't look to kosher, try to restart
+service nvidia-docker stop
+service nvidia-docker start
 
