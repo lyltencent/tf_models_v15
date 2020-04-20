@@ -15,11 +15,11 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 
 3. Start the docker: 
-Tensor Flow 1.5
+Tensorflow 1.5
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tf_15:latest 
 
-Tensorflow 2.0.0b1:
- sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter /bin/bash
+Tensorflow 2.1.0 (release version + own updates) 
+sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tensorflow/tensorflow:tf2.1-gpu-py3-yilong /bin/bash
 
 Tensorflow 2.1.0 (release version)
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tensorflow/tensorflow:2.1.0-gpu-py3-jupyter /bin/bash
@@ -28,9 +28,6 @@ My Pytorch:
 sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop pytorch:latest
 (with root access): 
 sudo docker run -u 0 -it --rm --runtime=nvidia -p 8888:8888 -p 6006:6006  -v ~/Documents:/Documents -v ~/Desktop:/Desktop pytorch:latest /bin/bash
-
-Experimental Docker: 
-sudo docker run -it --rm --runtime=nvidia -p 8888:8888 -u $(id -u):$(id -g) -v ~/Documents:/Documents -v ~/Desktop:/Desktop tensorflow/tensorflow:2.0.0b1-gpu-py3-jupyter /bin/bash
 
 ######################################
 How to get the object detection running from tensorflow/models repo

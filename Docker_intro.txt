@@ -1,0 +1,46 @@
+->List images
+
+sudo nvidia-docker images
+
+
+->List containers
+
+sudo nvidia-docker ps
+
+->Save updated image to new docker file or same docker file
+
+sudo docker commit "image" Newname/Oldname
+
+->Backup/Load docker to tar file to be used in another system
+
+sudo docker save -o <save image to path> <image name>
+eg-> sudo docker save -o /home/matrix/matrix-data.tar matrix-data
+
+sudo docker load -i <path to image tar file>
+eg->sudo docker load -i /home/matrixmatrix-data.tar
+
+-> Execute images i.e. to access the docker files
+
+xhost +
+sudo nvidia-docker run --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v ~/Dropbox/Linux/data:/data -v ~/Dropbox/Linux/inria:/inria -v ~/Dropbox/Linux/pretrainedmodels/:/pretrainedmodels -e PASSWORD=temp -p 8888:8888 -it tensorflowtorch1 /bin/bash
+
+
+--rm   to remove container after exit
+-e     environment variable
+-v     mount local data directory
+-it    interactive mode
+-p     port forwarding
+
+
+To pop out displays:
+xhost +
+-e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix
+
+
+For using browser with tensorflow:
+-e PASSWORD=temp -p 8888:8888
+
+
+check out the location of tensorflow:
+pip show tensorflow
+

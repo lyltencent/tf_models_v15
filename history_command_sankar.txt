@@ -85,7 +85,7 @@ mlsystem@mlsystem-System-Product-Name:~$ history
 
 
 
-Install Nvidia- driver: 
+================= How to install Nvidia-Driver =============================
   966  sudo apt-get update
   967  sudo apt-get upgrade
   970  sudo add-apt-repository ppa:graphics-drivers/ppa
@@ -94,6 +94,14 @@ Install Nvidia- driver:
   970  sudo add-apt-repository ppa:graphics-drivers/ppa
   971  sudo apt-get update 
   972  sudo apt install nvidia-driver-415
+
+================= How to upgrade/downgrade to a specific version of Nvidia-Driver =============================
+Ref: https://askubuntu.com/questions/1097433/ubuntu-18-10-how-can-i-install-a-specific-nvidia-drivers-version
+1. Remove nvidia driver
+sudo apt-get purge nvidia*
+2. Install nvidia driver: 
+add-apt-repository ppa:graphics-drivers/ppa
+sudo apt install nvidia-driver-418 nvidia-settings
 
 
 # Yilong COmmand: Update driver: 
@@ -111,4 +119,37 @@ service nvidia-docker status
 If that doesn't look to kosher, try to restart
 service nvidia-docker stop
 service nvidia-docker start
+
+======================== How to serach for nvidia-driver related to the currente system/device ===================
+
+forbest@yilong-home-linux:~$ apt-cache search nvidia-driver
+nvidia-384 - Transitional package for nvidia-driver-390
+nvidia-384-dev - Transitional package for nvidia-driver-390
+nvidia-driver-390 - NVIDIA driver metapackage
+nvidia-headless-390 - NVIDIA headless metapackage
+nvidia-headless-no-dkms-390 - NVIDIA headless metapackage - no DKMS
+xserver-xorg-video-nvidia-390 - NVIDIA binary Xorg driver
+nvidia-driver-418 - Transitional package for nvidia-driver-430
+nvidia-driver-435 - NVIDIA driver metapackage
+nvidia-headless-435 - NVIDIA headless metapackage
+nvidia-headless-no-dkms-435 - NVIDIA headless metapackage - no DKMS
+xserver-xorg-video-nvidia-435 - NVIDIA binary Xorg driver
+nvidia-304 - NVIDIA legacy binary driver - version 304.137
+nvidia-340 - NVIDIA binary driver - version 340.108
+nvidia-driver-410 - NVIDIA driver metapackage
+nvidia-driver-415 - NVIDIA driver metapackage
+nvidia-driver-430 - Transitional package for nvidia-driver-440
+nvidia-driver-440 - NVIDIA driver metapackage
+nvidia-headless-410 - NVIDIA headless metapackage
+nvidia-headless-415 - NVIDIA headless metapackage
+nvidia-headless-440 - NVIDIA headless metapackage
+nvidia-headless-no-dkms-410 - NVIDIA headless metapackage - no DKMS
+nvidia-headless-no-dkms-415 - NVIDIA headless metapackage - no DKMS
+nvidia-headless-no-dkms-440 - NVIDIA headless metapackage - no DKMS
+xserver-xorg-video-nvidia-410 - NVIDIA binary Xorg driver
+xserver-xorg-video-nvidia-415 - NVIDIA binary Xorg driver
+xserver-xorg-video-nvidia-430 - Transitional package for xserver-xorg-video-nvidia-440
+xserver-xorg-video-nvidia-440 - NVIDIA binary Xorg driver
+
+
 
