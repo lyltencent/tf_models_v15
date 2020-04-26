@@ -93,5 +93,8 @@ ENV/
 .idea/
 
 # Folders
-research/object_detection/test_images_results/*
-research/object_detection/test_images/*
+research/object_detection/test_images_results/
+research/object_detection/test_images/
+research/object_detection/models_pretrain/
+research/object_detection/results/
+
